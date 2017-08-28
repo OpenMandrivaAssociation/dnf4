@@ -1,0 +1,26 @@
+From 089c53045e979862e1bd54478ffd8c779e66df22 Mon Sep 17 00:00:00 2001
+From: Neal Gompa <ngompa13@gmail.com>
+Date: Sun, 27 Aug 2017 20:52:18 -0400
+Subject: [PATCH 1003/1003] tests: Fix typo in transaction test for testing
+ reinstall filter
+
+The expected filter value was set to 'rpm.rpm.RPMPROB_FILTER_OLDPACKAGE'
+instead of the correct 'rpm.RPMPROB_FILTER_OLDPACKAGE'.
+---
+ tests/test_transaction.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tests/test_transaction.py b/tests/test_transaction.py
+index f67b343c..9c094122 100644
+--- a/tests/test_transaction.py
++++ b/tests/test_transaction.py
+@@ -211,5 +211,5 @@ class RPMProbFilters(tests.support.TestCase):
+         self.base._sack = tests.support.mock_sack('main')
+         self.base._goal = dnf.goal.Goal(self.base.sack)
+         self.base.reinstall("librita")
+-        expected = rpm.rpm.RPMPROB_FILTER_OLDPACKAGE
++        expected = rpm.RPMPROB_FILTER_OLDPACKAGE
+         self.base._ts.setProbFilter.assert_called_with(expected)
+-- 
+2.14.1
+

@@ -1,0 +1,25 @@
+From fba7ae2890ddc725fdad3fd092278e36dd029a83 Mon Sep 17 00:00:00 2001
+From: Pavel Studenik <pstudeni@redhat.com>
+Date: Fri, 2 Dec 2016 14:59:39 +0100
+Subject: [PATCH] 'SpacewalkRepo' object has no attribute 'repofile'
+ (RhBug:1395737)
+
+---
+ dnf/repo.py | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/dnf/repo.py b/dnf/repo.py
+index 5956206..ed9af43 100644
+--- a/dnf/repo.py
++++ b/dnf/repo.py
+@@ -467,6 +467,7 @@ class Repo(dnf.yum.config.RepoConf):
+         self.name = self.id
+         self.key_import = _NullKeyImport()
+         self.metadata = None # :api
++        self.repofile = None # :api
+         self.sync_strategy = self.DEFAULT_SYNC
+         self.substitutions = dnf.conf.substitutions.Substitutions()
+         self.max_mirror_tries = 0 # try them all
+-- 
+2.10.2
+

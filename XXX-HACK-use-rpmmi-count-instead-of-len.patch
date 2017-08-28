@@ -1,0 +1,13 @@
+diff --git a/dnf/rpm/__init__.py b/dnf/rpm/__init__.py
+index 8b87bec1..f110029d 100644
+--- a/dnf/rpm/__init__.py
++++ b/dnf/rpm/__init__.py
+@@ -36,7 +36,7 @@ def detect_releasever(installroot):
+             idx = ts.dbMatch('provides', distroverpkg)
+         except (TypeError, rpm.error) as e:
+             raise dnf.exceptions.Error('Error: %s' % str(e))
+-        if not len(idx):
++        if not rpm.mi.count(idx):
+             continue
+         try:
+             hdr = next(idx)

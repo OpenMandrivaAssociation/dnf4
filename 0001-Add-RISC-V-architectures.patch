@@ -1,0 +1,26 @@
+From 70ff5de1944b1375e528ef8867a1764f3ce38962 Mon Sep 17 00:00:00 2001
+From: "Richard W.M. Jones" <rjones@redhat.com>
+Date: Wed, 28 Sep 2016 21:53:43 +0100
+Subject: [PATCH] Add RISC-V architectures.
+
+---
+ dnf/rpm/__init__.py | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/dnf/rpm/__init__.py b/dnf/rpm/__init__.py
+index 91385f2..5f34cc0 100644
+--- a/dnf/rpm/__init__.py
++++ b/dnf/rpm/__init__.py
+@@ -78,6 +78,9 @@ _BASEARCH_MAP = _invert({
+     'ppc': ('ppc',),
+     'ppc64': ('ppc64', 'ppc64iseries', 'ppc64p7', 'ppc64pseries'),
+     'ppc64le': ('ppc64le',),
++    'riscv32' : ('riscv32',),
++    'riscv64' : ('riscv64',),
++    'riscv128' : ('riscv128',),
+     's390': ('s390',),
+     's390x': ('s390x',),
+     'sh3': ('sh3',),
+-- 
+2.7.4
+
