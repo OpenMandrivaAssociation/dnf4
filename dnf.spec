@@ -242,10 +242,10 @@ mv %{buildroot}%{_bindir}/dnf-automatic-2 %{buildroot}%{_bindir}/dnf-automatic
 %endif
 
 # Fix broken shebangs
-sed -e "#!python2:#!%{_python2}" -i %{buildroot}%{_bindir}/*
+sed -e "s:#!python2:#!%{_python2}" -i %{buildroot}%{_bindir}/*
 
 %if %{with python3}
-sed -e "#!python3:#!%{_python3}" -i %{buildroot}%{_bindir}/*
+sed -e "s:#!python3:#!%{_python3}" -i %{buildroot}%{_bindir}/*
 %endif
 
 %if %{with tests}
