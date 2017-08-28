@@ -276,7 +276,7 @@ popd
 %ghost %{_localstatedir}/log/%{name}.librepo.log
 %ghost %{_localstatedir}/log/%{name}.rpm.log
 %ghost %{_localstatedir}/log/%{name}.plugin.log
-%{_datadir}/bash-completion/completions/dnf
+%{_sysconfdir}/bash_completion.d/dnf
 %{_mandir}/man5/dnf.conf.5.*
 %{_tmpfilesdir}/dnf.conf
 %{_sysconfdir}/libreport/events.d/collect_dnf.conf
