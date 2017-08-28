@@ -1,3 +1,16 @@
+diff --git a/dnf/base.py b/dnf/base.py
+index bcbb553a..6fa89461 100644
+--- a/dnf/base.py
++++ b/dnf/base.py
+@@ -1392,7 +1392,7 @@ class Base(object):
+         myts = dnf.rpm.transaction.initReadOnlyTransaction(root=installroot)
+         myts.pushVSFlags(~rpm.RPMVSF_NODSAHEADER)
+         idx = myts.dbMatch('name', 'gpg-pubkey')
+-        keys = len(idx)
++        keys = rpm.mi.count(idx)
+         del idx
+         del myts
+ 
 diff --git a/dnf/rpm/__init__.py b/dnf/rpm/__init__.py
 index 8b87bec1..f110029d 100644
 --- a/dnf/rpm/__init__.py
