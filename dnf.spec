@@ -1,11 +1,12 @@
 # Disable cross-compiling (makes cmake macro do weird things...)
 %global cross_compiling 0
 
-%global hawkey_version 0.6.4
+%global hawkey_version 0.6.4-2
 %global max_pyhawkey_ver 0.7.0
 %global librepo_version 1.7.16
 %global libcomps_version 0.1.6
 %global rpm_version 4.13.0
+%global pygpgme_version 0.3-7
 
 %global confdir %{_sysconfdir}/dnf
 
@@ -34,7 +35,7 @@
 
 Name:           dnf
 Version:        1.1.10
-Release:        3
+Release:        4
 Summary:        Package manager forked from Yum, using libsolv as a dependency resolver
 Group:          System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
@@ -124,7 +125,7 @@ As a Yum CLI compatibility layer, supplies /usr/bin/yum redirecting to DNF.
 Summary:    Python 2 interface to DNF
 Group:      System/Configuration/Packaging
 BuildRequires:  python2-devel
-BuildRequires:  python2-gpgme >= 0.3-7
+BuildRequires:  python2-gpgme >= %{pygpgme_version}
 BuildRequires:  python2-lzma
 BuildRequires:  python2-hawkey >= %{hawkey_version}
 BuildRequires:  python2-iniparse
@@ -137,7 +138,7 @@ BuildConflicts: python2-hawkey >= %{max_pyhawkey_ver}
 Recommends: bash-completion
 Requires:   dnf-conf = %{version}-%{release}
 #Requires:   deltarpm
-Requires:   python2-gpgme >= 0.3-7
+Requires:   python2-gpgme >= %{pygpgme_version}
 Requires:   python2-lzma
 Requires:   python2-hawkey >= %{hawkey_version}
 Requires:   python2-iniparse
@@ -160,7 +161,7 @@ BuildRequires:  python-iniparse
 BuildRequires:  python-libcomps >= %{libcomps_version}
 BuildRequires:  python-librepo >= %{librepo_version}
 BuildRequires:  python-nose
-BuildRequires:  python-gpgme >= 0.3-7
+BuildRequires:  python-gpgme >= %{pygpgme_version}
 BuildRequires:  python-rpm >= %{rpm_version}
 # DNF 1.1 doesn't work with pyhawkey >= 0.7.0
 BuildConflicts: python-hawkey >= %{max_pyhawkey_ver}
@@ -171,7 +172,7 @@ Requires:   python-hawkey >= %{hawkey_version}
 Requires:   python-iniparse
 Requires:   python-libcomps >= %{libcomps_version}
 Requires:   python-librepo >= %{librepo_version}
-Requires:   python-gpgme >= 0.3-7
+Requires:   python-gpgme >= %{pygpgme_version}
 Requires:   python-rpm >= %{rpm_version}
 # DNF 1.1 doesn't work with pyhawkey >= 0.7.0
 Conflicts:  python-hawkey >= %{max_pyhawkey_ver}
