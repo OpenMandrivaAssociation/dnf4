@@ -34,7 +34,7 @@
 
 Name:           dnf
 Version:        1.1.10
-Release:        1
+Release:        2
 Summary:        Package manager forked from Yum, using libsolv as a dependency resolver
 Group:          System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
@@ -239,6 +239,13 @@ rm %{buildroot}%{_bindir}/dnf-automatic-2
 %else
 ln -sr %{buildroot}%{_bindir}/dnf-2 %{buildroot}%{_bindir}/dnf
 mv %{buildroot}%{_bindir}/dnf-automatic-2 %{buildroot}%{_bindir}/dnf-automatic
+%endif
+
+# Fix broken shebangs
+sed -e "#!python2:#!%{_python2}" -i %{buildroot}%{_bindir}/*
+
+%if %{with python3}
+sed -e "#!python3:#!%{_python3}" -i %{buildroot}%{_bindir}/*
 %endif
 
 %if %{with tests}
