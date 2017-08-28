@@ -200,7 +200,7 @@ mkdir py3
 %endif
 
 %build
-%cmake -DPYTHON_DESIRED:str=2 -DPYTHON_EXECUTABLE:str="python2"
+%cmake -DPYTHON_DESIRED:str=2 -DPYTHON_EXECUTABLE:str="/usr/bin/python2"
 %make
 make doc-man
 
@@ -241,12 +241,6 @@ ln -sr %{buildroot}%{_bindir}/dnf-2 %{buildroot}%{_bindir}/dnf
 mv %{buildroot}%{_bindir}/dnf-automatic-2 %{buildroot}%{_bindir}/dnf-automatic
 %endif
 
-# Fix broken shebangs
-sed -e "s:#!python2:#!%{_python2}" -i %{buildroot}%{_bindir}/*
-
-%if %{with python3}
-sed -e "s:#!python3:#!%{_python3}" -i %{buildroot}%{_bindir}/*
-%endif
 
 %if %{with tests}
 %check
