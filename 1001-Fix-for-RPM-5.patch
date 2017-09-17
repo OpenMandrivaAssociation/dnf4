@@ -1,7 +1,7 @@
 From 8a7213da4789e59235f10de6cb42531f72aea604 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Elan=20Ruusam=C3=A4e?= <glen@delfi.ee>
 Date: Sat, 31 Jan 2015 20:48:14 +0200
-Subject: [PATCH 1001/1003] Fix for RPM 5
+Subject: [PATCH 1001/1005] Fix for RPM 5
 
 ---
  dnf/base.py            | 9 ++++-----

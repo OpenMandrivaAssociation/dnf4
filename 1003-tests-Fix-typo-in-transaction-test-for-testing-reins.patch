@@ -1,7 +1,7 @@
 From 089c53045e979862e1bd54478ffd8c779e66df22 Mon Sep 17 00:00:00 2001
 From: Neal Gompa <ngompa13@gmail.com>
 Date: Sun, 27 Aug 2017 20:52:18 -0400
-Subject: [PATCH 1003/1003] tests: Fix typo in transaction test for testing
+Subject: [PATCH 1003/1005] tests: Fix typo in transaction test for testing
  reinstall filter
 
 The expected filter value was set to 'rpm.rpm.RPMPROB_FILTER_OLDPACKAGE'

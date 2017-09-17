@@ -1,0 +1,153 @@
+From 2e42f2dcb05ae033673afd0e8fa0c9fd5b200a90 Mon Sep 17 00:00:00 2001
+From: Neal Gompa <ngompa13@gmail.com>
+Date: Sun, 22 Oct 2017 01:07:33 -0400
+Subject: [PATCH 1004/1005] Revert "using ts.addReinstall for package
+ reinstallation (RhBug:1071854)"
+
+This API was introduced in rpm.org RPM 4.12.0, and does not exist in any
+version of RPM 5. Reverting back to the old way fixes DNF's reinstall
+capability for RPM 5.
+
+This reverts commit 516aad977e108df0f99c0bfc03a25b180888937f.
+---
+ dnf.spec                      | 9 ++++-----
+ dnf/base.py                   | 4 ++++
+ dnf/cli/commands/reinstall.py | 1 +
+ dnf/rpm/transaction.py        | 1 -
+ dnf/transaction.py            | 6 +++---
+ tests/test_transaction.py     | 3 ++-
+ 6 files changed, 14 insertions(+), 10 deletions(-)
+
+diff --git a/dnf.spec b/dnf.spec
+index ca510510..d47569e3 100644
+--- a/dnf.spec
++++ b/dnf.spec
+@@ -2,7 +2,6 @@
+ %global hawkey_max_ver 0.7.0
+ %global librepo_version 1.7.16
+ %global libcomps_version 0.1.6
+-%global rpm_version 4.12.0
+ %global dnf_langpacks_ver 0.15.1-6
+ 
+ %global confdir %{_sysconfdir}/%{name}
+@@ -108,7 +107,7 @@ BuildRequires:  pygpgme
+ BuildRequires:  python2-pygpgme
+ %endif
+ BuildRequires:  pyliblzma
+-BuildRequires:  rpm-python >= %{rpm_version}
++BuildRequires:  rpm-python
+ Recommends:     bash-completion
+ Requires:       pyliblzma
+ Requires:       %{name}-conf = %{version}-%{release}
+@@ -124,7 +123,7 @@ Requires:       pygpgme
+ Requires:       python2-pygpgme
+ %endif
+ Requires:       rpm-plugin-systemd-inhibit
+-Requires:       rpm-python >= %{rpm_version}
++Requires:       rpm-python
+ # dnf-langpacks package is retired in F25
+ # to have clean upgrade path for dnf-langpacks
+ Obsoletes:      python-dnf-langpacks < %{dnf_langpacks_ver}
+@@ -143,7 +142,7 @@ BuildRequires:  python3-libcomps >= %{libcomps_version}
+ BuildRequires:  python3-librepo >= %{librepo_version}
+ BuildRequires:  python3-nose
+ BuildRequires:  python3-pygpgme
+-BuildRequires:  rpm-python3 >= %{rpm_version}
++BuildRequires:  rpm-python3
+ Recommends:     bash-completion
+ Requires:       %{name}-conf = %{version}-%{release}
+ Requires:       deltarpm
+@@ -154,7 +153,7 @@ Requires:       python3-libcomps >= %{libcomps_version}
+ Requires:       python3-librepo >= %{librepo_version}
+ Requires:       python3-pygpgme
+ Requires:       rpm-plugin-systemd-inhibit
+-Requires:       rpm-python3 >= %{rpm_version}
++Requires:       rpm-python3
+ # dnf-langpacks package is retired in F25
+ # to have clean upgrade path for dnf-langpacks
+ Obsoletes:      python3-dnf-langpacks < %{dnf_langpacks_ver}
+diff --git a/dnf/base.py b/dnf/base.py
+index bcbb553a..9eabd3a6 100644
+--- a/dnf/base.py
++++ b/dnf/base.py
+@@ -1607,6 +1607,7 @@ class Base(object):
+ 
+     def reinstall(self, pkg_spec, old_reponame=None, new_reponame=None,
+                   new_reponame_neq=None, remove_na=False):
++        self._add_reinstall_rpm_probfilters()
+         subj = dnf.subject.Subject(pkg_spec)
+         q = subj.get_best_query(self.sack)
+         installed_pkgs = [
+@@ -1770,6 +1771,7 @@ class Base(object):
+                     assert len(obsoleteds_) == 1
+                     obsoleteds.append(obsoleteds_[0])
+             assert len(news) == 1
++            self._add_reinstall_rpm_probfilters()
+             self._transaction.add_reinstall(first(olds), news[0],
+                                             obsoleteds)
+ 
+@@ -1920,6 +1922,8 @@ class Base(object):
+             myrepos += '\n'
+         self.history.write_addon_data('config-repos', myrepos)
+ 
++    def _add_reinstall_rpm_probfilters(self):
++        self.rpm_probfilter.add(rpm.RPMPROB_FILTER_REPLACEPKG)
+ 
+ def _msg_installed(pkg):
+     name = ucd(pkg)
+diff --git a/dnf/cli/commands/reinstall.py b/dnf/cli/commands/reinstall.py
+index 19dc4c08..e7e5c5cf 100644
+--- a/dnf/cli/commands/reinstall.py
++++ b/dnf/cli/commands/reinstall.py
+@@ -75,6 +75,7 @@ class ReinstallCommand(commands.Command):
+         local_pkgs = map(self.base.add_remote_rpm, filenames)
+         results = map(self.base.package_reinstall, local_pkgs)
+         done = functools.reduce(operator.or_, results, False)
++        self.base._add_reinstall_rpm_probfilters()
+ 
+         # Reinstall packages.
+         for pkg_spec in pkg_specs:
+diff --git a/dnf/rpm/transaction.py b/dnf/rpm/transaction.py
+index ff08d526..d919ab36 100644
+--- a/dnf/rpm/transaction.py
++++ b/dnf/rpm/transaction.py
+@@ -25,7 +25,6 @@ class TransactionWrapper(object):
+                          'order',
+                          'addErase',
+                          'addInstall',
+-                         'addReinstall',
+                          'run',
+                          'pgpImportPubkey',
+                          'pgpPrtPkts',
+diff --git a/dnf/transaction.py b/dnf/transaction.py
+index 5cec604d..1e2f5845 100644
+--- a/dnf/transaction.py
++++ b/dnf/transaction.py
+@@ -186,9 +186,9 @@ class Transaction(object):
+                 else:
+                     ts.addInstall(hdr, tsi, 'i')
+             elif tsi.op_type == REINSTALL:
+-                # note: in rpm 4.12 there should not be set
+-                # rpm.RPMPROB_FILTER_REPLACEPKG to work
+-                ts.addReinstall(tsi.installed.header, tsi)
++                ts.addErase(tsi.erased.idx)
++                hdr = tsi.installed.header
++                ts.addInstall(hdr, tsi, 'i')
+             elif tsi.op_type == UPGRADE:
+                 hdr = tsi.installed.header
+                 ts.addInstall(hdr, tsi, 'u')
+diff --git a/tests/test_transaction.py b/tests/test_transaction.py
+index 9c094122..e4dfceb8 100644
+--- a/tests/test_transaction.py
++++ b/tests/test_transaction.py
+@@ -211,5 +211,6 @@ class RPMProbFilters(tests.support.TestCase):
+         self.base._sack = tests.support.mock_sack('main')
+         self.base._goal = dnf.goal.Goal(self.base.sack)
+         self.base.reinstall("librita")
+-        expected = rpm.RPMPROB_FILTER_OLDPACKAGE
++        expected = rpm.RPMPROB_FILTER_REPLACEPKG |\
++                   rpm.RPMPROB_FILTER_OLDPACKAGE
+         self.base._ts.setProbFilter.assert_called_with(expected)
+-- 
+2.14.1
+

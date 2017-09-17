@@ -1,0 +1,57 @@
+From 599c393b49474f66526bf227f9c52e4b0be73fec Mon Sep 17 00:00:00 2001
+From: Neal Gompa <ngompa13@gmail.com>
+Date: Sun, 22 Oct 2017 01:19:12 -0400
+Subject: [PATCH 1005/1005] HACK: Use older rpm.mi.count() instead of len()
+
+The RPM 5 version of the rpm-python API does not produce a
+database index object that is iterable, and thus cannot be "counted"
+by the standard len() method in Python.
+
+Instead, use rpm.mi.count() to effectively accomplish the same thing.
+
+Note that this change fixes all but one unit test, which fails with
+a complaint that rpm.mi.count() is passed a MagicMock object instead of
+the real rpm.mi object, as seen below:
+
+ERROR: test_ts (tests.test_base.BaseTest)
+...
+   File "/home/makerpm/rpmbuild/BUILD/dnf-dnf-1.1.10-1/dnf/rpm/__init__.py", line 39, in detect_releasever
+     if not rpm.mi.count(idx):
+TypeError: descriptor 'count' requires a 'rpm.mi' object but received a 'MagicMock'
+
+Quite likely, the unit test needs a mocked version of rpm.mi.count()
+too.
+---
+ dnf/base.py         | 2 +-
+ dnf/rpm/__init__.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dnf/base.py b/dnf/base.py
+index 9eabd3a6..b9c3ad6d 100644
+--- a/dnf/base.py
++++ b/dnf/base.py
+@@ -1392,7 +1392,7 @@ class Base(object):
+         myts = dnf.rpm.transaction.initReadOnlyTransaction(root=installroot)
+         myts.pushVSFlags(~rpm.RPMVSF_NODSAHEADER)
+         idx = myts.dbMatch('name', 'gpg-pubkey')
+-        keys = len(idx)
++        keys = rpm.mi.count(idx)
+         del idx
+         del myts
+ 
+diff --git a/dnf/rpm/__init__.py b/dnf/rpm/__init__.py
+index 8b87bec1..f110029d 100644
+--- a/dnf/rpm/__init__.py
++++ b/dnf/rpm/__init__.py
+@@ -36,7 +36,7 @@ def detect_releasever(installroot):
+             idx = ts.dbMatch('provides', distroverpkg)
+         except (TypeError, rpm.error) as e:
+             raise dnf.exceptions.Error('Error: %s' % str(e))
+-        if not len(idx):
++        if not rpm.mi.count(idx):
+             continue
+         try:
+             hdr = next(idx)
+-- 
+2.14.1
+

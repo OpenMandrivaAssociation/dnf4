@@ -5,7 +5,6 @@
 %global max_pyhawkey_ver 0.7.0
 %global librepo_version 1.7.16
 %global libcomps_version 0.1.6
-%global rpm_version 4.13.0
 %global pygpgme_version 0.3-7
 
 %global confdir %{_sysconfdir}/dnf
@@ -26,7 +25,7 @@
 ##   File "/home/makerpm/rpmbuild/BUILD/dnf-dnf-1.1.10-1/dnf/rpm/__init__.py", line 39, in detect_releasever
 ##     if not rpm.mi.count(idx):
 ## TypeError: descriptor 'count' requires a 'rpm.mi' object but received a 'MagicMock'
-# This is caused by Patch6666, which is a hack to fix other tests that failed on this line...
+# This is caused by Patch1005, which is a hack to fix other tests that failed on this line...
 # FIXME: Better fix so tests can run!
 %bcond_with tests
 
@@ -35,7 +34,7 @@
 
 Name:           dnf
 Version:        1.1.10
-Release:        4
+Release:        5
 Summary:        Package manager forked from Yum, using libsolv as a dependency resolver
 Group:          System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
@@ -59,12 +58,9 @@ Patch0005:      0001-Add-new-API-add_new_repo-in-RepoDict-RhBug-1427132.patch
 Patch1001:      1001-Fix-for-RPM-5.patch
 Patch1002:      1002-Use-lib-systemd-system-for-SYSTEMD_DIR-by-default.patch
 Patch1003:      1003-tests-Fix-typo-in-transaction-test-for-testing-reins.patch
+Patch1004:      1004-Revert-using-ts.addReinstall-for-package-reinstallat.patch
+Patch1005:      1005-HACK-Use-older-rpm.mi.count-instead-of-len.patch
 
-# XXX: Hack to switch from len() to older rpm.mi.count()
-# This fixes all but one unit test, which complains that
-# count() is passed a MagicMock object instead of the real rpm.mi object.
-# FIXME: Find a better way to fix this!
-Patch6666:      XXX-HACK-use-rpmmi-count-instead-of-len.patch
 
 BuildArch:      noarch
 BuildRequires:  cmake
@@ -132,7 +128,7 @@ BuildRequires:  python2-iniparse
 BuildRequires:  python2-libcomps >= %{libcomps_version}
 BuildRequires:  python2-librepo >= %{librepo_version}
 BuildRequires:  python2-nose
-BuildRequires:  python2-rpm >= %{rpm_version}
+BuildRequires:  python2-rpm
 # DNF 1.1 doesn't work with pyhawkey >= 0.7.0
 BuildConflicts: python2-hawkey >= %{max_pyhawkey_ver}
 Recommends: bash-completion
@@ -144,7 +140,7 @@ Requires:   python2-hawkey >= %{hawkey_version}
 Requires:   python2-iniparse
 Requires:   python2-libcomps >= %{libcomps_version}
 Requires:   python2-librepo >= %{librepo_version}
-Requires:   python2-rpm >= %{rpm_version}
+Requires:   python2-rpm
 # DNF 1.1 doesn't work with pyhawkey >= 0.7.0
 Conflicts:  python2-hawkey >= %{max_pyhawkey_ver}
 
@@ -162,7 +158,7 @@ BuildRequires:  python-libcomps >= %{libcomps_version}
 BuildRequires:  python-librepo >= %{librepo_version}
 BuildRequires:  python-nose
 BuildRequires:  python-gpgme >= %{pygpgme_version}
-BuildRequires:  python-rpm >= %{rpm_version}
+BuildRequires:  python-rpm
 # DNF 1.1 doesn't work with pyhawkey >= 0.7.0
 BuildConflicts: python-hawkey >= %{max_pyhawkey_ver}
 Recommends: bash-completion
@@ -173,7 +169,7 @@ Requires:   python-iniparse
 Requires:   python-libcomps >= %{libcomps_version}
 Requires:   python-librepo >= %{librepo_version}
 Requires:   python-gpgme >= %{pygpgme_version}
-Requires:   python-rpm >= %{rpm_version}
+Requires:   python-rpm
 # DNF 1.1 doesn't work with pyhawkey >= 0.7.0
 Conflicts:  python-hawkey >= %{max_pyhawkey_ver}
 
