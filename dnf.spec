@@ -1,80 +1,48 @@
-# Disable cross-compiling (makes cmake macro do weird things...)
-%global cross_compiling 0
+# Warning: This package is synced from Mageia and Fedora!
 
-%global hawkey_version 0.6.4-2
-%global max_pyhawkey_ver 0.7.0
-%global librepo_version 1.7.16
-%global libcomps_version 0.1.6
-%global pygpgme_version 0.3-7
+%global hawkey_version 0.11.1
+%global librepo_version 1.7.19
+%global libcomps_version 0.1.8
+%global rpm_version 4.13.0
+%global min_plugins_core 2.1.3
+%global min_plugins_extras 0.10.0
 
 %global confdir %{_sysconfdir}/dnf
 
 %global pluginconfpath %{confdir}/plugins
 %global py2pluginpath %{python2_sitelib}/dnf-plugins
-
-# There are no Python 3 bindings for OpenMandriva's RPM (RPM 5.x)
-%bcond_with python3
-
-%if %{with python3}
 %global py3pluginpath %{python3_sitelib}/dnf-plugins
-%endif
 
-# One test currently fails:
-## ERROR: test_ts (tests.test_base.BaseTest)
-# ...
-##   File "/home/makerpm/rpmbuild/BUILD/dnf-dnf-1.1.10-1/dnf/rpm/__init__.py", line 39, in detect_releasever
-##     if not rpm.mi.count(idx):
-## TypeError: descriptor 'count' requires a 'rpm.mi' object but received a 'MagicMock'
-# This is caused by Patch1005, which is a hack to fix other tests that failed on this line...
-# FIXME: Better fix so tests can run!
-%bcond_with tests
-
-# Fedora package release versions are committed as versions in upstream
-%define origrel 1
+%bcond_without tests
 
 Name:           dnf
-Version:        1.1.10
-Release:        5
+Version:        2.7.5
+Release:        1
 Summary:        Package manager forked from Yum, using libsolv as a dependency resolver
 Group:          System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:        GPLv2+ and GPLv2 and GPL
 URL:            https://github.com/rpm-software-management/dnf
-Source0:        https://github.com/rpm-software-management/dnf/archive/%{name}-%{version}-%{origrel}.tar.gz
+Source0:        %{url}/archive/%{version}/%{name}-%{version}.tar.gz
 
-# Patches backported from upstream
-## https://github.com/rpm-software-management/dnf/commit/61df26328ed819e4f220760a98ce31529c4ec609
-Patch0001:      0001-cli-repolist-fix-showing-repository-name-with-disabl.patch
-## https://github.com/rpm-software-management/dnf/pull/623
-## https://github.com/rpm-software-management/dnf/commit/d84aee9c5a6f4249e7418865a1bb24aed194e659
-Patch0002:      0001-Add-RISC-V-architectures.patch
-## https://bugzilla.redhat.com/show_bug.cgi?id=1401041
-## https://github.com/rpm-software-management/dnf/commit/fba7ae2890ddc725fdad3fd092278e36dd029a83
-Patch0003:      0001-SpacewalkRepo-object-has-no-attribute-repofile-RhBug.patch
-Patch0004:      0001-subject-prefer-obsoletes-RhBug-1096506-RhBug-1332830.patch
-Patch0005:      0001-Add-new-API-add_new_repo-in-RepoDict-RhBug-1427132.patch
+# Backports from upstream
 
 # OpenMandriva specific patches
-Patch1001:      1001-Fix-for-RPM-5.patch
-Patch1002:      1002-Use-lib-systemd-system-for-SYSTEMD_DIR-by-default.patch
-Patch1003:      1003-tests-Fix-typo-in-transaction-test-for-testing-reins.patch
-Patch1004:      1004-Revert-using-ts.addReinstall-for-package-reinstallat.patch
-Patch1005:      1005-HACK-Use-older-rpm.mi.count-instead-of-len.patch
-
+Patch1001:      dnf-2.7.5-Fix-detection-of-Python-2.patch
 
 BuildArch:      noarch
 BuildRequires:  cmake
 BuildRequires:  gettext
+BuildRequires:  python-bugzilla
 BuildRequires:  python-sphinx
-BuildRequires:  systemd
+BuildRequires:  systemd-devel
 
-%if %{with python3}
-Requires:   python-dnf = %{version}-%{release}
-%else
-Requires:   python2-dnf = %{version}-%{release}
-%endif
+
+Requires:   python3-dnf = %{version}-%{release}
 Recommends: dnf-yum
 Recommends: dnf-plugins-core
+Conflicts:  dnf-plugins-core < %{min_plugins_core}
+# dnf-langpacks is no longer supported
 Requires(post):     systemd
 Requires(preun):    systemd
 Requires(postun):   systemd
@@ -94,6 +62,7 @@ Provides:           dnf-command(provides)
 Provides:           dnf-command(reinstall)
 Provides:           dnf-command(remove)
 Provides:           dnf-command(repolist)
+Provides:           dnf-command(repoquery)
 Provides:           dnf-command(repository-packages)
 Provides:           dnf-command(search)
 Provides:           dnf-command(updateinfo)
@@ -105,49 +74,53 @@ Package manager forked from Yum, using libsolv as a dependency resolver.
 %package conf
 Summary:    Configuration files for DNF
 Group:      System/Configuration/Packaging
-Requires:   openmandriva-repos
+# dnf-langpacks is no longer supported
+Obsoletes:  dnf-langpacks-conf < %{dnf_langpacks_ver}
+
 %description conf
 Configuration files for DNF.
 
-%package -n dnf-yum
+%package yum
 Group:      System/Configuration/Packaging
 Conflicts:  yum
 Requires:   dnf = %{version}-%{release}
 Summary:    As a Yum CLI compatibility layer, supplies /usr/bin/yum redirecting to DNF
-%description -n dnf-yum
+%description yum
 As a Yum CLI compatibility layer, supplies /usr/bin/yum redirecting to DNF.
 
 %package -n python2-dnf
 Summary:    Python 2 interface to DNF
 Group:      System/Configuration/Packaging
+Provides:   python-dnf = %{version}-%{release}
 BuildRequires:  python2-devel
-BuildRequires:  python2-gpgme >= %{pygpgme_version}
+BuildRequires:  python2-gpg
 BuildRequires:  python2-lzma
 BuildRequires:  python2-hawkey >= %{hawkey_version}
 BuildRequires:  python2-iniparse
 BuildRequires:  python2-libcomps >= %{libcomps_version}
 BuildRequires:  python2-librepo >= %{librepo_version}
 BuildRequires:  python2-nose
-BuildRequires:  python2-rpm
-# DNF 1.1 doesn't work with pyhawkey >= 0.7.0
-BuildConflicts: python2-hawkey >= %{max_pyhawkey_ver}
+BuildRequires:  python2-rpm >= %{rpm_version}
 Recommends: bash-completion
+Recommends: python-dbus
+Recommends: rpm-plugin-systemd-inhibit
 Requires:   dnf-conf = %{version}-%{release}
-#Requires:   deltarpm
-Requires:   python2-gpgme >= %{pygpgme_version}
+Requires:   mageia-dnf-conf
+Requires:   deltarpm
+Requires:   python2-gpg
 Requires:   python2-lzma
 Requires:   python2-hawkey >= %{hawkey_version}
 Requires:   python2-iniparse
 Requires:   python2-libcomps >= %{libcomps_version}
 Requires:   python2-librepo >= %{librepo_version}
-Requires:   python2-rpm
-# DNF 1.1 doesn't work with pyhawkey >= 0.7.0
-Conflicts:  python2-hawkey >= %{max_pyhawkey_ver}
+Requires:   python2-rpm >= %{rpm_version}
+# DNF 2.0 doesn't work with old plugins
+Conflicts:  python2-dnf-plugins-core < %{min_plugins_core}
+Conflicts:  python2-dnf-plugins-extras-common < %{min_plugins_extras}
 
 %description -n python2-dnf
 Python 2 interface to DNF.
 
-%if %{with python3}
 %package -n python-dnf
 Summary:    Python 3 interface to DNF
 Group:      System/Configuration/Packaging
@@ -157,30 +130,30 @@ BuildRequires:  python-iniparse
 BuildRequires:  python-libcomps >= %{libcomps_version}
 BuildRequires:  python-librepo >= %{librepo_version}
 BuildRequires:  python-nose
-BuildRequires:  python-gpgme >= %{pygpgme_version}
-BuildRequires:  python-rpm
-# DNF 1.1 doesn't work with pyhawkey >= 0.7.0
-BuildConflicts: python-hawkey >= %{max_pyhawkey_ver}
+BuildRequires:  python-gpg
+BuildRequires:  python-rpm >= %{rpm_version}
 Recommends: bash-completion
+Recommends: python-dbus
+Recommends: rpm-plugin-systemd-inhibit
 Requires:   dnf-conf = %{version}-%{release}
-#Requires:   deltarpm
+Requires:   deltarpm
 Requires:   python-hawkey >= %{hawkey_version}
 Requires:   python-iniparse
 Requires:   python-libcomps >= %{libcomps_version}
 Requires:   python-librepo >= %{librepo_version}
-Requires:   python-gpgme >= %{pygpgme_version}
-Requires:   python-rpm
-# DNF 1.1 doesn't work with pyhawkey >= 0.7.0
-Conflicts:  python-hawkey >= %{max_pyhawkey_ver}
+Requires:   python-gpg
+Requires:   python-rpm >= %{rpm_version}
+# DNF 2.0 doesn't work with old plugins
+Conflicts:  python-dnf-plugins-core < %{min_plugins_core}
+Conflicts:  python-dnf-plugins-extras-common < %{min_plugins_extras}
 
-%description -n python-dnf
+%description -n python3-dnf
 Python 3 interface to DNF.
-%endif
 
 %package automatic
 Summary:    Alternative CLI to "dnf upgrade" suitable for automatic, regular execution
 Group:      System/Configuration/Packaging
-BuildRequires:  systemd
+BuildRequires:  systemd-devel
 Requires:   dnf = %{version}-%{release}
 Requires(post):     systemd
 Requires(preun):    systemd
@@ -189,55 +162,40 @@ Requires(postun):   systemd
 Alternative CLI to "dnf upgrade" suitable for automatic, regular execution.
 
 %prep
-%setup -q -n %{name}-%{name}-%{version}-%{origrel}
-%apply_patches
+%autosetup -p1
 
-%if %{with python3}
 mkdir py3
-%endif
 
 %build
-%cmake -DPYTHON_DESIRED:str=2 -DPYTHON_EXECUTABLE:str="/usr/bin/python2"
-%make
+%cmake -DPYTHON_DESIRED:str=2
+%make_build
 make doc-man
 
-%if %{with python3}
 pushd ../py3
 %cmake -DPYTHON_DESIRED:str=3 -DWITH_MAN=0 ../../
-%make
+%make_build
 popd
-%endif
 
 %install
 pushd ./build
 %make_install
 popd
+%find_lang %{name}
 
-%if %{with python3}
 pushd ./py3/build
 %make_install
 popd
-%endif
-
-%find_lang %{name}
 
 mkdir -p %{buildroot}%{pluginconfpath}
 mkdir -p %{buildroot}%{py2pluginpath}
-%if %{with python3}
 mkdir -p %{buildroot}%{py3pluginpath}
-%endif
 mkdir -p %{buildroot}%{_localstatedir}/log
 mkdir -p %{buildroot}%{_var}/cache/dnf
 touch %{buildroot}%{_localstatedir}/log/%{name}.log
-%if %{with python3}
 ln -sr %{buildroot}%{_bindir}/dnf-3 %{buildroot}%{_bindir}/dnf
 mv %{buildroot}%{_bindir}/dnf-automatic-3 %{buildroot}%{_bindir}/dnf-automatic
 rm %{buildroot}%{_bindir}/dnf-automatic-2
-%else
-ln -sr %{buildroot}%{_bindir}/dnf-2 %{buildroot}%{_bindir}/dnf
-mv %{buildroot}%{_bindir}/dnf-automatic-2 %{buildroot}%{_bindir}/dnf-automatic
-%endif
-
+ln -sr %{buildroot}%{_bindir}/dnf-3 %{buildroot}%{_bindir}/yum
 
 %if %{with tests}
 %check
@@ -245,15 +203,14 @@ pushd ./build
 make ARGS="-V" test
 popd
 
-%if %{with python3}
 pushd ./py3/build
 make ARGS="-V" test
 popd
 %endif
-%endif
 
 %files -f %{name}.lang
-%doc COPYING PACKAGE-LICENSING AUTHORS README.rst
+%license COPYING PACKAGE-LICENSING
+%doc AUTHORS README.rst
 %{_bindir}/dnf
 %{_mandir}/man8/dnf.8.*
 %{_mandir}/man8/yum2dnf.8.*
@@ -262,68 +219,91 @@ popd
 %{_var}/cache/dnf
 
 %files conf
+%license COPYING PACKAGE-LICENSING
+%doc AUTHORS README.rst
 %dir %{confdir}
 %dir %{pluginconfpath}
 %dir %{confdir}/protected.d
-%config(noreplace) %{confdir}/dnf.conf
-%config(noreplace) %{confdir}/protected.d/dnf.conf
+%config(noreplace) %{confdir}/%{name}.conf
+%config(noreplace) %{confdir}/protected.d/%{name}.conf
 %config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
-%ghost %{_localstatedir}/lib/dnf
 %ghost %{_localstatedir}/log/hawkey.log
 %ghost %{_localstatedir}/log/%{name}.log
 %ghost %{_localstatedir}/log/%{name}.librepo.log
 %ghost %{_localstatedir}/log/%{name}.rpm.log
 %ghost %{_localstatedir}/log/%{name}.plugin.log
+%ghost %{_sharedstatedir}/%{name}
+%ghost %{_sharedstatedir}/%{name}/groups.json
+%ghost %{_sharedstatedir}/%{name}/yumdb
+%ghost %{_sharedstatedir}/%{name}/history
 %{_sysconfdir}/bash_completion.d/dnf
 %{_mandir}/man5/dnf.conf.5.*
 %{_tmpfilesdir}/dnf.conf
 %{_sysconfdir}/libreport/events.d/collect_dnf.conf
 
-%files -n dnf-yum
+%files yum
+%license COPYING PACKAGE-LICENSING
+%doc AUTHORS README.rst
 %{_bindir}/yum
 %{_mandir}/man8/yum.8.*
 
 %files -n python2-dnf
+%license COPYING PACKAGE-LICENSING
 %{_bindir}/dnf-2
+%doc AUTHORS README.rst
 %exclude %{python2_sitelib}/dnf/automatic
 %{python2_sitelib}/dnf/
 %dir %{py2pluginpath}
 
-%if %{with python3}
-%files -n python-dnf
+%files -n python3-dnf
+%license COPYING PACKAGE-LICENSING
+%doc AUTHORS README.rst
 %{_bindir}/dnf-3
 %exclude %{python3_sitelib}/dnf/automatic
 %{python3_sitelib}/dnf/
 %dir %{py3pluginpath}
-%endif
 
 %files automatic
-%{_bindir}/dnf-automatic
+%license COPYING PACKAGE-LICENSING
+%doc AUTHORS
+%{_bindir}/%{name}-automatic
 %config(noreplace) %{confdir}/automatic.conf
-%{_mandir}/man8/dnf.automatic.8.*
-%{_unitdir}/dnf-automatic.service
-%{_unitdir}/dnf-automatic.timer
-%if %{with python3}
-%{python3_sitelib}/dnf/automatic
-%else
-%{python2_sitelib}/dnf/automatic
-%endif
+%{_mandir}/man8/%{name}.automatic.8.*
+%{_unitdir}/%{name}-automatic.service
+%{_unitdir}/%{name}-automatic.timer
+%{_unitdir}/%{name}-automatic-notifyonly.service
+%{_unitdir}/%{name}-automatic-notifyonly.timer
+%{_unitdir}/%{name}-automatic-download.service
+%{_unitdir}/%{name}-automatic-download.timer
+%{_unitdir}/%{name}-automatic-install.service
+%{_unitdir}/%{name}-automatic-install.timer
+
+%{python3_sitelib}/%{name}/automatic
 
 %post
-%systemd_post dnf-makecache.timer
+%systemd_post %{name}-makecache.timer
 
 %preun
-%systemd_preun dnf-makecache.timer
+%systemd_preun %{name}-makecache.timer
 
 %postun
-%systemd_postun_with_restart dnf-makecache.timer
+%systemd_postun_with_restart %{name}-makecache.timer
 
 %post automatic
-%systemd_post dnf-automatic.timer
+%systemd_post %{name}-automatic.timer
+%systemd_post %{name}-automatic-notifyonly.timer
+%systemd_post %{name}-automatic-download.timer
+%systemd_post %{name}-automatic-install.timer
 
 %preun automatic
-%systemd_preun dnf-automatic.timer
+%systemd_preun %{name}-automatic.timer
+%systemd_preun %{name}-automatic-notifyonly.timer
+%systemd_preun %{name}-automatic-download.timer
+%systemd_preun %{name}-automatic-install.timer
 
 %postun automatic
-%systemd_postun_with_restart dnf-automatic.timer
+%systemd_postun_with_restart %{name}-automatic.timer
+%systemd_postun_with_restart %{name}-automatic-notifyonly.timer
+%systemd_postun_with_restart %{name}-automatic-download.timer
+%systemd_postun_with_restart %{name}-automatic-install.timer
 
