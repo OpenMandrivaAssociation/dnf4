@@ -147,7 +147,7 @@ Requires:	python-rpm >= %{rpm_version}
 Conflicts:	python-dnf-plugins-core < %{min_plugins_core}
 Conflicts:	python-dnf-plugins-extras-common < %{min_plugins_extras}
 
-%description -n python3-dnf
+%description -n python-dnf
 Python 3 interface to DNF.
 
 %package automatic
@@ -257,7 +257,7 @@ cd ..
 %{python2_sitelib}/dnf/
 %dir %{py2pluginpath}
 
-%files -n python3-dnf
+%files -n python-dnf
 %license COPYING PACKAGE-LICENSING
 %doc AUTHORS README.rst
 %{_bindir}/dnf-3
