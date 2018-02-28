@@ -10,7 +10,6 @@
 %define confdir %{_sysconfdir}/dnf
 
 %define pluginconfpath %{confdir}/plugins
-%define py2pluginpath %{python2_sitelib}/dnf-plugins
 %define py3pluginpath %{python3_sitelib}/dnf-plugins
 
 %bcond_without tests
@@ -36,7 +35,7 @@ BuildRequires:	gettext
 BuildRequires:	python-bugzilla
 BuildRequires:	python-sphinx
 BuildRequires:	pkgconfig(libsystemd)
-Requires:	python3-dnf = %{version}-%{release}
+Requires:	python-dnf = %{version}-%{release}
 Recommends:	dnf-yum
 Recommends:	dnf-plugins-core
 Conflicts:	dnf-plugins-core < %{min_plugins_core}
@@ -88,39 +87,6 @@ Requires:	dnf = %{version}-%{release}
 %description yum
 As a Yum CLI compatibility layer, supplies /usr/bin/yum redirecting to DNF.
 
-%package -n python2-dnf
-Summary:	Python 2 interface to DNF
-Group:		System/Configuration/Packaging
-Provides:	python-dnf = %{version}-%{release}
-BuildRequires:	pkgconfig(python2)
-BuildRequires:	python2-gpg
-BuildRequires:	python2-lzma
-BuildRequires:	python2-hawkey >= %{hawkey_version}
-BuildRequires:	python2-iniparse
-BuildRequires:	python2-libcomps >= %{libcomps_version}
-BuildRequires:	python2-librepo >= %{librepo_version}
-BuildRequires:	python2-nose
-BuildRequires:	python2-rpm >= %{rpm_version}
-Recommends:	bash-completion
-Recommends:	python-dbus
-Recommends:	rpm-plugin-systemd-inhibit
-Requires:	dnf-conf = %{version}-%{release}
-Requires:	dnf-conf
-Requires:	deltarpm
-Requires:	python2-gpg
-Requires:	python2-lzma
-Requires:	python2-hawkey >= %{hawkey_version}
-Requires:	python2-iniparse
-Requires:	python2-libcomps >= %{libcomps_version}
-Requires:	python2-librepo >= %{librepo_version}
-Requires:	python2-rpm >= %{rpm_version}
-# DNF 2.0 doesn't work with old plugins
-Conflicts:	python2-dnf-plugins-core < %{min_plugins_core}
-Conflicts:	python2-dnf-plugins-extras-common < %{min_plugins_extras}
-
-%description -n python2-dnf
-Python 2 interface to DNF.
-
 %package -n python-dnf
 Summary:	Python 3 interface to DNF
 Group:		System/Configuration/Packaging
@@ -165,49 +131,31 @@ Alternative CLI to "dnf upgrade" suitable for automatic, regular execution.
 %prep
 %autosetup -p1
 
-mkdir py3
 
 %build
-%cmake -DPYTHON_DESIRED:str=2
-%make
+%cmake -DPYTHON_DESIRED:str=3
+%make_build
 make doc-man
 
-cd ../py3
-%cmake -DPYTHON_DESIRED:str=3 -DWITH_MAN=0 ../../
-%make
-cd ..
 
 %install
-cd ./build
-%makeinstall_std
-cd ..
+%make_install -C build
 
 %find_lang %{name}
 
-cd ./py3/build
-%makeinstall_std
-cd .
 
 mkdir -p %{buildroot}%{pluginconfpath}
-mkdir -p %{buildroot}%{py2pluginpath}
 mkdir -p %{buildroot}%{py3pluginpath}
 mkdir -p %{buildroot}%{_localstatedir}/log
 mkdir -p %{buildroot}%{_var}/cache/dnf
 touch %{buildroot}%{_localstatedir}/log/%{name}.log
 ln -sr %{buildroot}%{_bindir}/dnf-3 %{buildroot}%{_bindir}/dnf
 mv %{buildroot}%{_bindir}/dnf-automatic-3 %{buildroot}%{_bindir}/dnf-automatic
-rm %{buildroot}%{_bindir}/dnf-automatic-2
-ln -sr %{buildroot}%{_bindir}/dnf-3 %{buildroot}%{_bindir}/yum
+ln -sr %{buildroot}%{_bindir}/dnf %{buildroot}%{_bindir}/yum
 
 %if %{with tests}
 %check
-cd ./build
-make ARGS="-V" test
-cd ..
-
-cd ./py3/build
-make ARGS="-V" test
-cd ..
+make ARGS="-V" test -C build
 %endif
 
 %files -f %{name}.lang
@@ -248,14 +196,6 @@ cd ..
 %doc AUTHORS README.rst
 %{_bindir}/yum
 %{_mandir}/man8/yum.8.*
-
-%files -n python2-dnf
-%license COPYING PACKAGE-LICENSING
-%{_bindir}/dnf-2
-%doc AUTHORS README.rst
-%exclude %{python2_sitelib}/dnf/automatic
-%{python2_sitelib}/dnf/
-%dir %{py2pluginpath}
 
 %files -n python-dnf
 %license COPYING PACKAGE-LICENSING
