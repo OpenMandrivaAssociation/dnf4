@@ -1,0 +1,30 @@
+From db37bc8365b7cef78abf0d7b85c14fb4a491dbfa Mon Sep 17 00:00:00 2001
+From: Neal Gompa <ngompa13@gmail.com>
+Date: Sat, 3 Mar 2018 12:44:54 -0500
+Subject: [PATCH] util: Correctly source errno.EEXIST
+
+---
+ dnf/util.py | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/dnf/util.py b/dnf/util.py
+index ab7fd279c..d0f1a4f25 100644
+--- a/dnf/util.py
++++ b/dnf/util.py
+@@ -28,6 +28,7 @@
+ import dnf
+ import dnf.const
+ import dnf.pycomp
++import errno
+ import itertools
+ import librepo
+ import locale
+@@ -120,7 +121,7 @@ def ensure_dir(dname):
+     try:
+         os.makedirs(dname, mode=0o755)
+     except OSError as e:
+-        if e.errno != os.errno.EEXIST or not os.path.isdir(dname):
++        if e.errno != errno.EEXIST or not os.path.isdir(dname):
+             raise e
+ 
+ def empty(iterable):

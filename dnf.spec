@@ -26,8 +26,12 @@ Source0:	%{url}/archive/%{version}/%{name}-%{version}.tar.gz
 
 # Backports from upstream
 
+# Proposed patches
+Patch0501:	PR1030-util-Correctly-source-errno.EEXIST.patch
+
 # OpenMandriva specific patches
 Patch1001:	dnf-2.7.5-Fix-detection-of-Python-2.patch
+Patch1002:	dnf-2.7.5-Allow-overriding-SYSTEMD_DIR-for-split-usr.patch
 
 BuildArch:	noarch
 BuildRequires:	cmake
@@ -130,7 +134,7 @@ Alternative CLI to "dnf upgrade" suitable for automatic, regular execution.
 
 
 %build
-%cmake -DPYTHON_DESIRED:str=3
+%cmake -DPYTHON_DESIRED:str=3 -DSYSTEMD_DIR:str="%{_unitdir}"
 %make_build
 make doc-man
 
@@ -149,6 +153,9 @@ touch %{buildroot}%{_localstatedir}/log/%{name}.log
 ln -sr %{buildroot}%{_bindir}/dnf-3 %{buildroot}%{_bindir}/dnf
 mv %{buildroot}%{_bindir}/dnf-automatic-3 %{buildroot}%{_bindir}/dnf-automatic
 ln -sr %{buildroot}%{_bindir}/dnf %{buildroot}%{_bindir}/yum
+
+# Ensure code is byte compiled
+%py_compile %{buildroot}
 
 %if %{with tests}
 %check
@@ -183,7 +190,7 @@ make ARGS="-V" test -C build
 %ghost %{_sharedstatedir}/%{name}/groups.json
 %ghost %{_sharedstatedir}/%{name}/yumdb
 %ghost %{_sharedstatedir}/%{name}/history
-%{_sysconfdir}/bash_completion.d/dnf
+%{_datadir}/bash-completion/completions/dnf
 %{_mandir}/man5/dnf.conf.5.*
 %{_tmpfilesdir}/dnf.conf
 %{_sysconfdir}/libreport/events.d/collect_dnf.conf

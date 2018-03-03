@@ -1,0 +1,28 @@
+From 5043f8736385d9819510ea55ccc6bbf7f4f67da5 Mon Sep 17 00:00:00 2001
+From: Neal Gompa <ngompa13@gmail.com>
+Date: Sat, 3 Mar 2018 17:53:15 +0000
+Subject: [PATCH] CMakeLists: Allow overriding SYSTEMD_DIR for split-usr setups
+
+---
+ CMakeLists.txt | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index afd12b4..446c7ff 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -8,7 +8,10 @@ if (NOT PYTHON_DESIRED)
+ endif()
+ 
+ SET( SYSCONFDIR /etc)
+-SET( SYSTEMD_DIR /usr/lib/systemd/system)
++
++if (NOT SYSTEMD_DIR)
++    SET( SYSTEMD_DIR /usr/lib/systemd/system)
++endif()
+ 
+ if (${PYTHON_DESIRED} STREQUAL "2")
+ 	FIND_PACKAGE (PythonInterp 2.7 REQUIRED)
+-- 
+2.15.1
+
