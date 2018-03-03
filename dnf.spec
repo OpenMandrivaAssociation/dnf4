@@ -39,7 +39,6 @@ Requires:	python-dnf = %{version}-%{release}
 Recommends:	dnf-yum
 Recommends:	dnf-plugins-core
 Conflicts:	dnf-plugins-core < %{min_plugins_core}
-# dnf-langpacks is no longer supported
 Requires(post):		systemd
 Requires(preun):	systemd
 Requires(postun):	systemd
@@ -72,8 +71,6 @@ Package manager forked from Yum, using libsolv as a dependency resolver.
 %package conf
 Summary:	Configuration files for DNF
 Group:		System/Configuration/Packaging
-# dnf-langpacks is no longer supported
-Obsoletes:	dnf-langpacks-conf < %{dnf_langpacks_ver}
 
 %description conf
 Configuration files for DNF.
