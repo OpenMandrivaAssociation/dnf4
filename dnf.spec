@@ -107,6 +107,7 @@ BuildRequires:	python-librepo >= %{librepo_version}
 BuildRequires:	python-nose
 BuildRequires:	python-gpg
 BuildRequires:	python-rpm >= %{rpm_version}
+BuildRequires:	pkgconfig(bash-completion)
 Recommends:	bash-completion
 Recommends:	python-dbus
 Recommends:	rpm-plugin-systemd-inhibit
@@ -142,10 +143,9 @@ Alternative CLI to "dnf upgrade" suitable for automatic, regular execution.
 
 
 %build
-%cmake -DPYTHON_DESIRED:str=3 -DSYSTEMD_DIR:str="%{_unitdir}"
+%cmake -DPYTHON_DESIRED:str=3 -DSYSTEMD_DIR:str="%{_systemunitdir}"
 %make_build
 make doc-man
-
 
 %install
 %make_install -C build
@@ -198,7 +198,7 @@ make ARGS="-V" test -C build
 %ghost %{_sharedstatedir}/%{name}/groups.json
 %ghost %{_sharedstatedir}/%{name}/yumdb
 %ghost %{_sharedstatedir}/%{name}/history
-%{_datadir}/bash-completion/completions/dnf
+%{_sysconfdir}/bash_completion.d/dnf
 %{_mandir}/man5/dnf.conf.5.*
 %{_tmpfilesdir}/dnf.conf
 %{_sysconfdir}/libreport/events.d/collect_dnf.conf
