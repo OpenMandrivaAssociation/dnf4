@@ -19,7 +19,8 @@
 %define pluginconfpath %{confdir}/plugins
 %define py3pluginpath %{python3_sitelib}/dnf-plugins
 
-%bcond_without tests
+# (tpg) enable when rpm4 migration is done
+%bcond_with tests
 
 Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
 Name:		dnf
