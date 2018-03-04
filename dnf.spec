@@ -198,7 +198,7 @@ make ARGS="-V" test -C build
 %ghost %{_sharedstatedir}/%{name}/groups.json
 %ghost %{_sharedstatedir}/%{name}/yumdb
 %ghost %{_sharedstatedir}/%{name}/history
-%{_sysconfdir}/bash_completion.d/dnf
+%{_datadir}/bash-completion/completions/dnf
 %{_mandir}/man5/dnf.conf.5.*
 %{_tmpfilesdir}/dnf.conf
 %{_sysconfdir}/libreport/events.d/collect_dnf.conf
