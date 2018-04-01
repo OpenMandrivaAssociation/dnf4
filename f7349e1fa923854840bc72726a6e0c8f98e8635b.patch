@@ -1,0 +1,33 @@
+From f7349e1fa923854840bc72726a6e0c8f98e8635b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Bernhard=20Rosenkr=C3=A4nzer?= <bero@lindev.ch>
+Date: Sun, 1 Apr 2018 14:26:01 +0200
+Subject: [PATCH] Fix armv8 bits
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+armv8l is arm rather than armhfp (while all standard ARMv8 devices have
+an FPU, there's a legit usecase for armv8l with softfloat ABI -- needing
+to link a binary-only library built for armv7l for instance).
+armv8hl, armv8hnl and armv8hcnl are armhfp.
+
+Signed-off-by: Bernhard Rosenkränzer <bero@lindev.ch>
+---
+ dnf/rpm/__init__.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dnf/rpm/__init__.py b/dnf/rpm/__init__.py
+index 79a28614d..26ef1db59 100644
+--- a/dnf/rpm/__init__.py
++++ b/dnf/rpm/__init__.py
+@@ -77,8 +77,8 @@ def _invert(dct):
+     'aarch64': ('aarch64',),
+     'alpha': ('alpha', 'alphaev4', 'alphaev45', 'alphaev5', 'alphaev56',
+               'alphaev6', 'alphaev67', 'alphaev68', 'alphaev7', 'alphapca56'),
+-    'arm': ('armv5tejl', 'armv5tel', 'armv5tl', 'armv6l', 'armv7l'),
+-    'armhfp': ('armv6hl', 'armv7hl', 'armv7hnl', 'armv8l'),
++    'arm': ('armv5tejl', 'armv5tel', 'armv5tl', 'armv6l', 'armv7l', 'armv8l'),
++    'armhfp': ('armv6hl', 'armv7hl', 'armv7hnl', 'armv8hl', 'armv8hnl', 'armv8hcnl'),
+     'i386': ('i386', 'athlon', 'geode', 'i386', 'i486', 'i586', 'i686'),
+     'ia64': ('ia64',),
+     'mips': ('mips',),

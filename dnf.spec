@@ -25,7 +25,7 @@
 Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
 Name:		dnf
 Version:	2.7.5
-Release:	1
+Release:	2
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
@@ -36,6 +36,8 @@ Source0:	%{url}/archive/%{version}/%{name}-%{version}.tar.gz
 
 # Proposed patches
 Patch0501:	PR1030-util-Correctly-source-errno.EEXIST.patch
+# https://github.com/rpm-software-management/dnf/pull/1046
+Patch0502:	https://github.com/rpm-software-management/dnf/pull/1046/commits/f7349e1fa923854840bc72726a6e0c8f98e8635b.patch
 
 # OpenMandriva specific patches
 Patch1001:	dnf-2.7.5-Fix-detection-of-Python-2.patch
