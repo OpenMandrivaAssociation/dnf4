@@ -24,20 +24,15 @@
 
 Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
 Name:		dnf
-Version:	2.7.5
-Release:	2
+Version:	3.0.1
+Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
 URL:		https://github.com/rpm-software-management/dnf
-Source0:	%{url}/archive/%{version}/%{name}-%{version}.tar.gz
+Source0:	https://github.com/rpm-software-management/dnf/archive/%{version}.tar.gz
 
 # Backports from upstream
-
-# Proposed patches
-Patch0501:	PR1030-util-Correctly-source-errno.EEXIST.patch
-# https://github.com/rpm-software-management/dnf/pull/1046
-Patch0502:	https://github.com/rpm-software-management/dnf/pull/1046/commits/f7349e1fa923854840bc72726a6e0c8f98e8635b.patch
 
 # OpenMandriva specific patches
 Patch1001:	dnf-2.7.5-Fix-detection-of-Python-2.patch
@@ -50,6 +45,8 @@ BuildRequires:	python-bugzilla
 BuildRequires:	python-sphinx
 BuildRequires:	pkgconfig(libsystemd)
 Requires:	python-dnf = %{version}-%{release}
+Requires:	python-libdnf
+Requires:	python-smartcols
 Recommends:	dnf-yum
 Recommends:	dnf-plugins-core
 Conflicts:	dnf-plugins-core < %{min_plugins_core}
@@ -176,8 +173,9 @@ make ARGS="-V" test -C build
 %license COPYING PACKAGE-LICENSING
 %doc AUTHORS README.rst
 %{_bindir}/dnf
-%{_mandir}/man8/dnf.8.*
-%{_mandir}/man8/yum2dnf.8.*
+%{_mandir}/man5/yum.conf.5*
+%{_mandir}/man8/dnf.8*
+%{_mandir}/man8/yum2dnf.8*
 %{_unitdir}/dnf-makecache.service
 %{_unitdir}/dnf-makecache.timer
 %{_var}/cache/dnf
@@ -261,4 +259,3 @@ make ARGS="-V" test -C build
 %systemd_postun_with_restart %{name}-automatic-notifyonly.timer
 %systemd_postun_with_restart %{name}-automatic-download.timer
 %systemd_postun_with_restart %{name}-automatic-install.timer
-
