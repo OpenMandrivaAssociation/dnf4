@@ -44,6 +44,7 @@ BuildRequires:	gettext
 BuildRequires:	python-bugzilla
 BuildRequires:	python-sphinx
 BuildRequires:	pkgconfig(libsystemd)
+BuildRequires:	systemd
 Requires:	python-dnf = %{version}-%{release}
 Requires:	python-libdnf
 Requires:	python-smartcols
