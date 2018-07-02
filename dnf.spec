@@ -25,7 +25,7 @@
 Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
 Name:		dnf
 Version:	3.0.2
-Release:	4
+Release:	5
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
@@ -33,6 +33,10 @@ URL:		https://github.com/rpm-software-management/dnf
 Source0:	https://github.com/rpm-software-management/dnf/archive/%{version}.tar.gz
 
 # Backports from upstream
+
+# Suitable for upstreaming
+# Teach dnf about znver1 and znver1_32 sub-arches
+Patch500:	dnf-3.0.2-znver1.patch
 
 # OpenMandriva specific patches
 Patch1001:	dnf-2.7.5-Fix-detection-of-Python-2.patch
@@ -50,6 +54,7 @@ Requires:	python-libdnf
 Requires:	python-smartcols
 Requires:	python-gi
 Requires:	typelib(Modulemd)
+Requires:	%{_lib}glib-gir2.0
 Requires:	gobject-introspection
 Recommends:	dnf-yum
 Recommends:	dnf-plugins-core
