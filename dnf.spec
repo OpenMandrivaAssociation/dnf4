@@ -25,7 +25,7 @@
 Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
 Name:		dnf
 Version:	3.0.2
-Release:	3
+Release:	4
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
@@ -50,6 +50,7 @@ Requires:	python-libdnf
 Requires:	python-smartcols
 Requires:	python-gi
 Requires:	typelib(Modulemd)
+Requires:	gobject-introspection
 Recommends:	dnf-yum
 Recommends:	dnf-plugins-core
 Conflicts:	dnf-plugins-core < %{min_plugins_core}
