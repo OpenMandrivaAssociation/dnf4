@@ -24,7 +24,7 @@
 
 Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
 Name:		dnf
-Version:	3.0.1
+Version:	3.0.2
 Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
@@ -141,7 +141,6 @@ Alternative CLI to "dnf upgrade" suitable for automatic, regular execution.
 %prep
 %autosetup -p1
 
-
 %build
 %cmake -DPYTHON_DESIRED:str=3 -DSYSTEMD_DIR:str="%{_systemunitdir}"
 %make_build
@@ -151,7 +150,6 @@ make doc-man
 %make_install -C build
 
 %find_lang %{name}
-
 
 mkdir -p %{buildroot}%{pluginconfpath}
 mkdir -p %{buildroot}%{py3pluginpath}
