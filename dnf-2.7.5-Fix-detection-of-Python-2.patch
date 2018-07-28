@@ -1,25 +1,12 @@
-From 52b970b7435f17c421f51bd27e95a2178a0a48d4 Mon Sep 17 00:00:00 2001
-From: Neal Gompa <ngompa13@gmail.com>
-Date: Sat, 20 Jan 2018 08:57:45 -0500
-Subject: [PATCH] Fix detection of Python 2
-
----
- CMakeLists.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 23e5f88..afd12b4 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -11,7 +11,7 @@ SET( SYSCONFDIR /etc)
- SET( SYSTEMD_DIR /usr/lib/systemd/system)
- 
- if (${PYTHON_DESIRED} STREQUAL "2")
--	FIND_PACKAGE (PythonInterp REQUIRED)
-+	FIND_PACKAGE (PythonInterp 2.7 REQUIRED)
- else()
- 	SET(Python_ADDITIONAL_VERSIONS 3.3)
- 	FIND_PACKAGE(PythonLibs 3.0)
--- 
-2.12.3
-
+diff -up dnf-3.1.0/CMakeLists.txt.3~ dnf-3.1.0/CMakeLists.txt
+--- dnf-3.1.0/CMakeLists.txt.3~	2018-07-29 01:18:51.809279721 +0200
++++ dnf-3.1.0/CMakeLists.txt	2018-07-29 01:19:54.166373558 +0200
+@@ -9,7 +9,7 @@ SET( SYSTEMD_DIR /usr/lib/systemd/system
+ IF (NOT PYTHON_DESIRED)
+     FIND_PACKAGE (PythonInterp REQUIRED)
+ ELSEIF (${PYTHON_DESIRED} STREQUAL "2")
+-    FIND_PACKAGE (PythonInterp 2 EXACT REQUIRED)
++    FIND_PACKAGE (PythonInterp 2.7 EXACT REQUIRED)
+ ELSEIF (${PYTHON_DESIRED} STREQUAL "3")
+     FIND_PACKAGE (PythonInterp 3 EXACT REQUIRED)
+ ELSEIF (EXISTS ${PYTHON_DESIRED})
