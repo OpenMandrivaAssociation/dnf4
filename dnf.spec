@@ -24,7 +24,7 @@
 
 Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
 Name:		dnf
-Version:	3.4.0
+Version:	3.6.1
 Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
@@ -49,6 +49,7 @@ BuildRequires:	python-bugzilla
 BuildRequires:	python-sphinx
 BuildRequires:	pkgconfig(libsystemd)
 BuildRequires:	systemd
+BuildRequires:	systemd-macros
 Requires:	python-dnf = %{version}-%{release}
 Requires:	python-libdnf
 Requires:	python-smartcols
@@ -150,7 +151,7 @@ Alternative CLI to "dnf upgrade" suitable for automatic, regular execution.
 %autosetup -p1
 
 %build
-%cmake -DPYTHON_DESIRED:str=3 -DSYSTEMD_DIR:str="%{_systemunitdir}"
+%cmake -DPYTHON_DESIRED:str=3 -DSYSTEMD_DIR:str="%{_unitdir}"
 %make_build
 make doc-man
 
