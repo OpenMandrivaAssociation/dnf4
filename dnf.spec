@@ -7,12 +7,12 @@
 
 # Warning: This package is synced from Mageia and Fedora!
 
-%define hawkey_version 0.11.1
-%define librepo_version 1.7.19
+%define hawkey_version 0.20.0
 %define libcomps_version 0.1.8
-%define rpm_version 4.13.0
-%define min_plugins_core 2.1.3
-%define min_plugins_extras 0.10.0
+%define libmodulemd_version 1.4.0
+%define rpm_version 4.14.2
+%define min_plugins_core 3.0.2
+%define min_plugins_extras 3.0.1
 
 %define confdir %{_sysconfdir}/dnf
 
@@ -48,21 +48,14 @@ BuildRequires:	gettext
 BuildRequires:	python-bugzilla
 BuildRequires:	python-sphinx
 BuildRequires:	pkgconfig(libsystemd)
-BuildRequires:	systemd
 BuildRequires:	systemd-macros
+BuildRequires:	pkgconfig(modulemd) >= %{libmodulemd_version}
 Requires:	python-dnf = %{version}-%{release}
 Requires:	python-libdnf
-Requires:	python-smartcols
-Requires:	python-gi
 Requires:	typelib(Modulemd)
-Requires:	%{_lib}glib-gir2.0
-Requires:	gobject-introspection
 Recommends:	dnf-yum
 Recommends:	dnf-plugins-core
 Conflicts:	dnf-plugins-core < %{min_plugins_core}
-Requires(post):		systemd
-Requires(preun):	systemd
-Requires(postun):	systemd
 Provides:	dnf-command(autoremove)
 Provides:	dnf-command(check-update)
 Provides:	dnf-command(clean)
@@ -112,7 +105,6 @@ BuildRequires:	pkgconfig(python)
 BuildRequires:	python-hawkey >= %{hawkey_version}
 BuildRequires:	python-iniparse
 BuildRequires:	python-libcomps >= %{libcomps_version}
-BuildRequires:	python-librepo >= %{librepo_version}
 BuildRequires:	python-nose
 BuildRequires:	python-gpg
 BuildRequires:	python-rpm >= %{rpm_version}
@@ -120,12 +112,12 @@ BuildRequires:	pkgconfig(bash-completion)
 Recommends:	bash-completion
 Recommends:	python-dbus
 Recommends:	rpm-plugin-systemd-inhibit
+Requires:	typelib(Modulemd)
 Requires:	dnf-conf = %{version}-%{release}
 Requires:	deltarpm
 Requires:	python-hawkey >= %{hawkey_version}
 Requires:	python-iniparse
 Requires:	python-libcomps >= %{libcomps_version}
-Requires:	python-librepo >= %{librepo_version}
 Requires:	python-gpg
 Requires:	python-rpm >= %{rpm_version}
 # DNF 2.0 doesn't work with old plugins
@@ -140,9 +132,7 @@ Summary:	Alternative CLI to "dnf upgrade" suitable for automatic, regular execut
 Group:		System/Configuration/Packaging
 BuildRequires:	pkgconfig(libsystemd)
 Requires:	dnf = %{version}-%{release}
-Requires(post):	systemd
-Requires(preun):	systemd
-Requires(postun):	systemd
+Requires:	systemd
 
 %description automatic
 Alternative CLI to "dnf upgrade" suitable for automatic, regular execution.
@@ -172,6 +162,18 @@ ln -sr %{buildroot}%{_bindir}/dnf %{buildroot}%{_bindir}/yum
 # Ensure code is byte compiled
 %py_compile %{buildroot}
 
+install -d %{buildroot}%{_presetdir}
+cat > %{buildroot}%{_presetdir}/86-%{name}.preset << EOF
+enable %{name}-makecache.timer
+EOF
+
+cat > %{buildroot}%{_presetdir}/86-%{name}-automatic.preset << EOF
+enable  %{name}-automatic.timer
+enable  %{name}-automatic-notifyonly.timer
+enable  %{name}-automatic-download.timer
+enable  %{name}-automatic-install.timer
+EOF
+
 %if %{with tests}
 %check
 make ARGS="-V" test -C build
@@ -186,6 +188,7 @@ make ARGS="-V" test -C build
 %{_mandir}/man8/dnf.8*
 %{_mandir}/man8/yum2dnf.8*
 %{_mandir}/man8/yum-shell.8*
+%{_presetdir}/86-%{name}.preset 
 %{_unitdir}/dnf-makecache.service
 %{_unitdir}/dnf-makecache.timer
 %{_var}/cache/dnf
@@ -233,6 +236,7 @@ make ARGS="-V" test -C build
 %{_bindir}/%{name}-automatic
 %config(noreplace) %{confdir}/automatic.conf
 %{_mandir}/man8/%{name}.automatic.8.*
+%{_presetdir}/86-%{name}-automatic.preset
 %{_unitdir}/%{name}-automatic.service
 %{_unitdir}/%{name}-automatic.timer
 %{_unitdir}/%{name}-automatic-notifyonly.service
@@ -242,30 +246,3 @@ make ARGS="-V" test -C build
 %{_unitdir}/%{name}-automatic-install.service
 %{_unitdir}/%{name}-automatic-install.timer
 %{python3_sitelib}/%{name}/automatic
-
-%post
-%systemd_post %{name}-makecache.timer
-
-%preun
-%systemd_preun %{name}-makecache.timer
-
-%postun
-%systemd_postun_with_restart %{name}-makecache.timer
-
-%post automatic
-%systemd_post %{name}-automatic.timer
-%systemd_post %{name}-automatic-notifyonly.timer
-%systemd_post %{name}-automatic-download.timer
-%systemd_post %{name}-automatic-install.timer
-
-%preun automatic
-%systemd_preun %{name}-automatic.timer
-%systemd_preun %{name}-automatic-notifyonly.timer
-%systemd_preun %{name}-automatic-download.timer
-%systemd_preun %{name}-automatic-install.timer
-
-%postun automatic
-%systemd_postun_with_restart %{name}-automatic.timer
-%systemd_postun_with_restart %{name}-automatic-notifyonly.timer
-%systemd_postun_with_restart %{name}-automatic-download.timer
-%systemd_postun_with_restart %{name}-automatic-install.timer
