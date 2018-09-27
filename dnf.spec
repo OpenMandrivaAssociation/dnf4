@@ -52,7 +52,6 @@ BuildRequires:	systemd-macros
 BuildRequires:	pkgconfig(modulemd) >= %{libmodulemd_version}
 Requires:	python-dnf = %{version}-%{release}
 Requires:	python-libdnf
-Requires:	typelib(Modulemd)
 Recommends:	dnf-yum
 Recommends:	dnf-plugins-core
 Conflicts:	dnf-plugins-core < %{min_plugins_core}
@@ -112,7 +111,7 @@ BuildRequires:	pkgconfig(bash-completion)
 Recommends:	bash-completion
 Recommends:	python-dbus
 Recommends:	rpm-plugin-systemd-inhibit
-Requires:	typelib(Modulemd)
+Requires:	%{mklibname modulemd 0} >= %{libmodulemd_version}
 Requires:	dnf-conf = %{version}-%{release}
 Requires:	deltarpm
 Requires:	python-hawkey >= %{hawkey_version}
