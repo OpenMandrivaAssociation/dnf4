@@ -111,7 +111,7 @@ BuildRequires:	pkgconfig(bash-completion)
 Recommends:	bash-completion
 Recommends:	python-dbus
 Recommends:	rpm-plugin-systemd-inhibit
-Requires:	%{mklibname modulemd 0} >= %{libmodulemd_version}
+Requires:	%{mklibname modulemd 1} >= %{libmodulemd_version}
 Requires:	dnf-conf = %{version}-%{release}
 Requires:	deltarpm
 Requires:	python-hawkey >= %{hawkey_version}
