@@ -1,0 +1,29 @@
+From 2ac8c07ac4358005876f61d17cc3efe67b7b54bc Mon Sep 17 00:00:00 2001
+From: Neal Gompa <ngompa@mageia.org>
+Date: Sun, 28 May 2017 13:52:21 -0400
+Subject: [PATCH 1001/1002] Disable the dnf-makecache timer for Mageia live
+ environments
+
+The timer was already disabled for live environments using the
+standard dracut modules for setting up live environments, but
+Mageia currently uses a custom live environment module.
+---
+ etc/systemd/dnf-makecache.timer | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/etc/systemd/dnf-makecache.timer b/etc/systemd/dnf-makecache.timer
+index dcb1ff9..7c0838b 100644
+--- a/etc/systemd/dnf-makecache.timer
++++ b/etc/systemd/dnf-makecache.timer
+@@ -3,6 +3,8 @@ Description=dnf makecache --timer
+ ConditionKernelCommandLine=!rd.live.image
+ # See comment in dnf-makecache.service
+ ConditionPathExists=!/run/ostree-booted
++# Disable timer for live environments
++ConditionPathExists=!/run/initramfs/omdv/LiveOS
+ Wants=network-online.target
+ 
+ [Timer]
+-- 
+2.13.6
+
