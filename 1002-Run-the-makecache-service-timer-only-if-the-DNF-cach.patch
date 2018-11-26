@@ -33,7 +33,7 @@ index 7c0838b..ca071bc 100644
 @@ -5,6 +5,8 @@ ConditionKernelCommandLine=!rd.live.image
  ConditionPathExists=!/run/ostree-booted
  # Disable timer for live environments
- ConditionPathExists=!/run/mgalive
+ ConditionPathExists=!/run/initramfs/omdv/LiveOS
 +# See comment in dnf-makecache.service
 +ConditionPathExists=/var/cache/dnf/packages.db
  Wants=network-online.target
