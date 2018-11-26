@@ -25,7 +25,7 @@
 Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
 Name:		dnf
 Version:	4.0.9
-Release:	1
+Release:	2
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
@@ -41,6 +41,19 @@ Patch500:	dnf-3.0.2-znver1.patch
 # OpenMandriva specific patches
 Patch1001:	dnf-2.7.5-Fix-detection-of-Python-2.patch
 Patch1002:	dnf-2.7.5-Allow-overriding-SYSTEMD_DIR-for-split-usr.patch
+
+# The makecache timer disables itself whenever it is run in a live environment.
+# However, the upstream version of the unit only knows about the upstream dracut
+# live environment module. Since we currently use a custom one in Mageia,
+# we need to detect it and properly disable the timer. (ngompa)
+Patch1100:      1001-Disable-the-dnf-makecache-timer-for-Mageia-live-envi.patch
+
+# Per Martin Whitaker's request, the makecache timer should
+# only get invoked once the user has chosen to use DNF and the cache
+# has already been generated at least once.
+# This makes the first run considerably slower, but subsequent runs
+# should be much faster. (ngompa)
+Patch1102:      1002-Run-the-makecache-service-timer-only-if-the-DNF-cach.patch
 
 BuildArch:	noarch
 BuildRequires:	cmake
