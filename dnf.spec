@@ -180,10 +180,10 @@ enable %{name}-makecache.timer
 EOF
 
 cat > %{buildroot}%{_presetdir}/86-%{name}-automatic.preset << EOF
-disable  %{name}-automatic.timer
-disable  %{name}-automatic-notifyonly.timer
-disable  %{name}-automatic-download.timer
-disable  %{name}-automatic-install.timer
+enable %{name}-automatic.timer
+enable %{name}-automatic-notifyonly.timer
+enable %{name}-automatic-download.timer
+disable %{name}-automatic-install.timer
 EOF
 
 %if %{with tests}
