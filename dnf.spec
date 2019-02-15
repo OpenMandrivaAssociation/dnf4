@@ -24,8 +24,8 @@
 
 Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
 Name:		dnf
-Version:	4.0.10
-Release:	2
+Version:	4.1.0
+Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
@@ -41,6 +41,7 @@ Patch500:	dnf-3.0.2-znver1.patch
 # OpenMandriva specific patches
 Patch1001:	dnf-2.7.5-Fix-detection-of-Python-2.patch
 Patch1002:	dnf-2.7.5-Allow-overriding-SYSTEMD_DIR-for-split-usr.patch
+Patch1003:	dnf-4.1.0-sphinx-build.patch
 
 # The makecache timer disables itself whenever it is run in a live environment.
 # However, the upstream version of the unit only knows about the upstream dracut
@@ -153,7 +154,8 @@ Alternative CLI to "dnf upgrade" suitable for automatic, regular execution.
 %autosetup -p1
 
 %build
-%cmake -DPYTHON_DESIRED:str=3 -DSYSTEMD_DIR:str="%{_unitdir}"
+%cmake -DPYTHON_DESIRED:str=3 \
+	-DSYSTEMD_DIR:str="%{_unitdir}"
 %make_build
 make doc-man
 

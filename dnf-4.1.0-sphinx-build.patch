@@ -1,0 +1,16 @@
+diff -up dnf-4.1.0/CMakeLists.txt.omv~ dnf-4.1.0/CMakeLists.txt
+diff -up dnf-4.1.0/doc/CMakeLists.txt.omv~ dnf-4.1.0/doc/CMakeLists.txt
+--- dnf-4.1.0/doc/CMakeLists.txt.omv~	2019-02-15 05:27:35.780349591 +0100
++++ dnf-4.1.0/doc/CMakeLists.txt	2019-02-15 05:27:52.510600907 +0100
+@@ -2,9 +2,9 @@
+ # tell sphinx-build to do them both in one go:
+ 
+ if (${PYTHON_VERSION_MAJOR} STREQUAL "2")
+-    SET(SPHINX_BUILD_NAME "sphinx-build")
++    SET(SPHINX_BUILD_NAME "sphinx-build-2")
+ else()
+-    SET(SPHINX_BUILD_NAME "sphinx-build-3")
++    SET(SPHINX_BUILD_NAME "sphinx-build")
+ endif()
+ 
+ 
