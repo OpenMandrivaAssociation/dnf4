@@ -9,7 +9,7 @@
 
 %define hawkey_version 0.20.0
 %define libcomps_version 0.1.8
-%define libmodulemd_version 1.4.0
+%define libmodulemd_version 1.8.2
 %define rpm_version 4.14.2
 %define min_plugins_core 3.0.2
 %define min_plugins_extras 3.0.1
@@ -24,13 +24,13 @@
 
 Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
 Name:		dnf
-Version:	4.2.1
+Version:	4.2.2
 Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
 URL:		https://github.com/rpm-software-management/dnf
-Source0:	https://github.com/rpm-software-management/dnf/archive/%{version}.tar.gz
+Source0:	https://github.com/rpm-software-management/dnf/archive/%{name}-%{version}.tar.gz
 
 # Backports from upstream
 
