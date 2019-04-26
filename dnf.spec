@@ -1,10 +1,3 @@
-# (ngompa) disable rpmlint to avoid terrible cyclic dependency problem in rpm5->rpm4 + python2->python3 transition
-# remove after rpm5->rpm4 transition is complete
-%undefine _build_pkgcheck_set
-%undefine _build_pkgcheck_srpm
-%undefine _nonzero_exit_pkgcheck_terminate_build
-###
-
 # Warning: This package is synced from Mageia and Fedora!
 
 %define hawkey_version 0.20.0
@@ -202,7 +195,7 @@ make ARGS="-V" test -C build
 %{_mandir}/man8/dnf.8*
 %{_mandir}/man8/yum2dnf.8*
 %{_mandir}/man8/yum-shell.8*
-%{_presetdir}/86-%{name}.preset 
+%{_presetdir}/86-%{name}.preset
 %{_unitdir}/dnf-makecache.service
 %{_unitdir}/dnf-makecache.timer
 %{_var}/cache/dnf
@@ -212,8 +205,10 @@ make ARGS="-V" test -C build
 %doc AUTHORS README.rst
 %dir %{confdir}
 %dir %{pluginconfpath}
+%dir %{confdir}/aliases.d
 %dir %{confdir}/protected.d
 %config(noreplace) %{confdir}/%{name}.conf
+%config(noreplace) %{confdir}/aliases.d/zypper.conf
 %config(noreplace) %{confdir}/protected.d/%{name}.conf
 %config(noreplace) %{confdir}/protected.d/yum.conf
 %config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
