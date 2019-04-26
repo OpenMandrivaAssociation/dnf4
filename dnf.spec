@@ -1,11 +1,11 @@
 # Warning: This package is synced from Mageia and Fedora!
 
-%define hawkey_version 0.20.0
+%define hawkey_version 0.31.0
 %define libcomps_version 0.1.8
 %define libmodulemd_version 1.8.2
 %define rpm_version 4.14.2
-%define min_plugins_core 3.0.2
-%define min_plugins_extras 3.0.1
+%define min_plugins_core 4.0.6
+%define min_plugins_extras 4.0.4
 
 %define confdir %{_sysconfdir}/dnf
 
@@ -18,7 +18,7 @@
 Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
 Name:		dnf
 Version:	4.2.5
-Release:	1
+Release:	2
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
@@ -149,6 +149,7 @@ Alternative CLI to "dnf upgrade" suitable for automatic, regular execution.
 %build
 %cmake -DPYTHON_DESIRED:str=3 \
 	-DSYSTEMD_DIR:str="%{_unitdir}"
+
 %make_build
 make doc-man
 
