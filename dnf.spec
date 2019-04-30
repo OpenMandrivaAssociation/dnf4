@@ -23,7 +23,7 @@ Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
 URL:		https://github.com/rpm-software-management/dnf
-Source0:	https://github.com/rpm-software-management/dnf/archive/%{name}-%{version}.tar.gz
+Source0:	https://github.com/rpm-software-management/dnf/archive/%{version}/%{name}-%{version}.tar.gz
 
 # Backports from upstream
 
