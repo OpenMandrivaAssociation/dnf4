@@ -17,8 +17,8 @@
 
 Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
 Name:		dnf
-Version:	4.2.5
-Release:	2
+Version:	4.2.6
+Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
@@ -246,7 +246,6 @@ make ARGS="-V" test -C build
 %doc AUTHORS
 %{_bindir}/%{name}-automatic
 %config(noreplace) %{confdir}/automatic.conf
-%{_mandir}/man8/%{name}.automatic.8.*
 %{_presetdir}/86-%{name}-automatic.preset
 %{_unitdir}/%{name}-automatic.service
 %{_unitdir}/%{name}-automatic.timer
@@ -257,3 +256,4 @@ make ARGS="-V" test -C build
 %{_unitdir}/%{name}-automatic-install.service
 %{_unitdir}/%{name}-automatic-install.timer
 %{python3_sitelib}/%{name}/automatic
+%{_mandir}/man8/dnf-automatic.8*
