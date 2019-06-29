@@ -18,7 +18,7 @@
 Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
 Name:		dnf
 Version:	4.2.6
-Release:	1
+Release:	2
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
@@ -41,13 +41,6 @@ Patch1003:	dnf-4.1.0-sphinx-build.patch
 # live environment module. Since we currently use a custom one in Mageia,
 # we need to detect it and properly disable the timer. (ngompa)
 Patch1100:      1001-Disable-the-dnf-makecache-timer-for-Mageia-live-envi.patch
-
-# Per Martin Whitaker's request, the makecache timer should
-# only get invoked once the user has chosen to use DNF and the cache
-# has already been generated at least once.
-# This makes the first run considerably slower, but subsequent runs
-# should be much faster. (ngompa)
-Patch1102:      1002-Run-the-makecache-service-timer-only-if-the-DNF-cach.patch
 
 BuildArch:	noarch
 BuildRequires:	cmake
