@@ -1,8 +1,8 @@
 # Warning: This package is synced from Mageia and Fedora!
 
-%define hawkey_version 0.35.3
+%define hawkey_version 0.37.0
 %define libcomps_version 0.1.8
-%define libmodulemd_version 1.8.2
+%define libmodulemd_version 2.8.2
 %define rpm_version 4.14.2
 %define min_plugins_core 4.0.6
 %define min_plugins_extras 4.0.4
