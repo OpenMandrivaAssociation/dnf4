@@ -173,6 +173,9 @@ enable %{name}-automatic-download.timer
 disable %{name}-automatic-install.timer
 EOF
 
+# (tpg) not needed here
+rm -vf %{buildroot}%{confdir}/%{name}-strict.conf
+
 %if %{with tests}
 %check
 make ARGS="-V" test -C build
@@ -184,6 +187,7 @@ make ARGS="-V" test -C build
 %{_bindir}/dnf
 %{_mandir}/man1/yum-aliases.1*
 %{_mandir}/man5/yum.conf.5*
+%{_mandir}/man7/dnf.modularity.7*
 %{_mandir}/man8/dnf.8*
 %{_mandir}/man8/yum2dnf.8*
 %{_mandir}/man8/yum-shell.8*
