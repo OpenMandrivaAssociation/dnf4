@@ -2,7 +2,7 @@
 
 %define hawkey_version 0.37.0
 %define libcomps_version 0.1.8
-%define libmodulemd_version 2.8.2
+%define libmodulemd_version 1.4.0
 %define rpm_version 4.14.2
 %define min_plugins_core 4.0.6
 %define min_plugins_extras 4.0.4
@@ -17,7 +17,7 @@
 
 Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
 Name:		dnf
-Version:	4.2.11
+Version:	4.2.15
 Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
@@ -40,7 +40,7 @@ Patch1003:	dnf-4.1.0-sphinx-build.patch
 # However, the upstream version of the unit only knows about the upstream dracut
 # live environment module. Since we currently use a custom one in Mageia,
 # we need to detect it and properly disable the timer. (ngompa)
-Patch1100:      1001-Disable-the-dnf-makecache-timer-for-Mageia-live-envi.patch
+Patch1100:	1001-Disable-the-dnf-makecache-timer-for-Mageia-live-envi.patch
 
 BuildArch:	noarch
 BuildRequires:	cmake
