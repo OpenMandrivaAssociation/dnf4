@@ -1,16 +1,16 @@
-diff -up dnf-3.0.2/dnf/rpm/__init__.py.omv~ dnf-3.0.2/dnf/rpm/__init__.py
---- dnf-3.0.2/dnf/rpm/__init__.py.omv~	2018-07-03 00:36:18.365697925 +0200
-+++ dnf-3.0.2/dnf/rpm/__init__.py	2018-07-03 00:36:42.536696171 +0200
-@@ -81,7 +81,7 @@ _BASEARCH_MAP = _invert({
-               'alphaev6', 'alphaev67', 'alphaev68', 'alphaev7', 'alphapca56'),
+diff -Naur dnf-4.2.15/dnf/rpm/__init__.py dnf-4.2.15.tpg/dnf/rpm/__init__.py
+--- dnf-4.2.15/dnf/rpm/__init__.py	2019-11-05 09:26:35.000000000 +0000
++++ dnf-4.2.15.tpg/dnf/rpm/__init__.py	2019-11-13 22:03:33.902705365 +0000
+@@ -92,7 +92,7 @@
      'arm': ('armv5tejl', 'armv5tel', 'armv5tl', 'armv6l', 'armv7l', 'armv8l'),
-     'armhfp': ('armv6hl', 'armv7hl', 'armv7hnl', 'armv8hl', 'armv8hnl', 'armv8hcnl'),
+     'armhfp': ('armv6hl', 'armv7hl', 'armv7hnl', 'armv7hcnl', 'armv8hl',
+                'armv8hnl', 'armv8hcnl'),
 -    'i386': ('i386', 'athlon', 'geode', 'i386', 'i486', 'i586', 'i686'),
 +    'i386': ('i386', 'athlon', 'geode', 'i386', 'i486', 'i586', 'i686', 'znver1_32'),
      'ia64': ('ia64',),
      'mips': ('mips',),
      'mipsel': ('mipsel',),
-@@ -100,7 +100,7 @@ _BASEARCH_MAP = _invert({
+@@ -111,7 +111,7 @@
      'sh4': ('sh4', 'sh4a'),
      'sparc': ('sparc', 'sparc64', 'sparc64v', 'sparcv8', 'sparcv9',
                'sparcv9v'),

@@ -47,7 +47,6 @@ BuildRequires:	cmake
 BuildRequires:	gettext
 BuildRequires:	python-bugzilla
 BuildRequires:	python-sphinx
-BuildRequires:	pkgconfig(libsystemd)
 BuildRequires:	systemd-macros
 BuildRequires:	pkgconfig(modulemd) >= %{libmodulemd_version}
 Requires:	python-dnf = %{version}-%{release}
@@ -129,7 +128,6 @@ Python 3 interface to DNF.
 %package automatic
 Summary:	Alternative CLI to "dnf upgrade" suitable for automatic, regular execution
 Group:		System/Configuration/Packaging
-BuildRequires:	pkgconfig(libsystemd)
 Requires:	dnf = %{version}-%{release}
 Requires:	systemd
 
