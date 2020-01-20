@@ -1,6 +1,6 @@
 # Warning: This package is synced from Mageia and Fedora!
 
-%define hawkey_version 0.37.0
+%define hawkey_version 0.43.1
 %define libcomps_version 0.1.8
 %define libmodulemd_version 1.4.0
 %define rpm_version 4.14.2
@@ -12,13 +12,11 @@
 %define pluginconfpath %{confdir}/plugins
 %define py3pluginpath %{python3_sitelib}/dnf-plugins
 
-# (tpg) enable when rpm4 migration is done
-%bcond_with tests
 
 Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
 Name:		dnf
-Version:	4.2.17
-Release:	2
+Version:	4.2.18
+Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
@@ -50,7 +48,6 @@ BuildRequires:	python-sphinx
 BuildRequires:	systemd-macros
 BuildRequires:	pkgconfig(modulemd) >= %{libmodulemd_version}
 Requires:	python-dnf = %{version}-%{release}
-Requires:	python-libdnf
 Recommends:	dnf-yum
 Recommends:	dnf-plugins-core
 Conflicts:	dnf-plugins-core < %{min_plugins_core}
@@ -99,22 +96,19 @@ As a Yum CLI compatibility layer, supplies /usr/bin/yum redirecting to DNF.
 %package -n python-dnf
 Summary:	Python 3 interface to DNF
 Group:		System/Configuration/Packaging
-BuildRequires:	pkgconfig(python)
+BuildRequires:	pkgconfig(python3)
 BuildRequires:	python-hawkey >= %{hawkey_version}
-BuildRequires:	python-iniparse
 BuildRequires:	python-libcomps >= %{libcomps_version}
 BuildRequires:	python-nose
 BuildRequires:	python-gpg
 BuildRequires:	python-rpm >= %{rpm_version}
 BuildRequires:	pkgconfig(bash-completion)
 Recommends:	bash-completion
-Recommends:	python-dbus
+Recommends:	(python-dbus if networkmanager)
 Recommends:	rpm-plugin-systemd-inhibit
-Requires:	%{mklibname modulemd 1} >= %{libmodulemd_version}
 Requires:	dnf-conf = %{version}-%{release}
 Requires:	deltarpm
 Requires:	python-hawkey >= %{hawkey_version}
-Requires:	python-iniparse
 Requires:	python-libcomps >= %{libcomps_version}
 Requires:	python-gpg
 Requires:	python-rpm >= %{rpm_version}
@@ -138,7 +132,7 @@ Alternative CLI to "dnf upgrade" suitable for automatic, regular execution.
 %autosetup -p1
 
 %build
-%cmake -DPYTHON_DESIRED:str=3 \
+%cmake -DPYTHON_DESIRED:FILEPATH="%{__python3}" \
 	-DSYSTEMD_DIR:str="%{_unitdir}"
 
 %make_build
@@ -176,21 +170,15 @@ EOF
 # (tpg) not needed here
 rm -vf %{buildroot}%{confdir}/%{name}-strict.conf
 
-%if %{with tests}
 %check
 make ARGS="-V" test -C build
-%endif
 
 %files -f %{name}.lang
 %license COPYING PACKAGE-LICENSING
 %doc AUTHORS README.rst
 %{_bindir}/dnf
-%{_mandir}/man1/yum-aliases.1*
-%{_mandir}/man5/yum.conf.5*
 %{_mandir}/man7/dnf.modularity.7*
 %{_mandir}/man8/dnf.8*
-%{_mandir}/man8/yum2dnf.8*
-%{_mandir}/man8/yum-shell.8*
 %{_presetdir}/86-%{name}.preset
 %{_unitdir}/dnf-makecache.service
 %{_unitdir}/dnf-makecache.timer
@@ -226,7 +214,11 @@ make ARGS="-V" test -C build
 %license COPYING PACKAGE-LICENSING
 %doc AUTHORS README.rst
 %{_bindir}/yum
+%{_mandir}/man1/yum-aliases.1*
+%{_mandir}/man5/yum.conf.5*
 %{_mandir}/man8/yum.8.*
+%{_mandir}/man8/yum2dnf.8*
+%{_mandir}/man8/yum-shell.8*
 
 %files -n python-dnf
 %license COPYING PACKAGE-LICENSING
