@@ -175,7 +175,6 @@ rm -vf %{buildroot}%{confdir}/%{name}-strict.conf
 %{_bindir}/dnf
 %{_mandir}/man7/dnf.modularity.7*
 %{_mandir}/man8/dnf.8*
-%{_presetdir}/86-%{name}.preset
 %{_unitdir}/dnf-makecache.service
 %{_unitdir}/dnf-makecache.timer
 %{_var}/cache/dnf
