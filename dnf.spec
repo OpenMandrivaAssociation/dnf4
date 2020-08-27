@@ -155,6 +155,7 @@ ln -sr %{buildroot}%{_bindir}/dnf %{buildroot}%{_bindir}/yum
 # Ensure code is byte compiled
 %py_compile %{buildroot}
 
+install -d %{buildroot}%{_presetdir}
 cat > %{buildroot}%{_presetdir}/86-%{name}-automatic.preset << EOF
 enable %{name}-automatic.timer
 enable %{name}-automatic-notifyonly.timer
