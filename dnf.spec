@@ -15,7 +15,7 @@
 
 Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
 Name:		dnf
-Version:	4.2.23
+Version:	4.4.0
 Release:	2
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
@@ -202,6 +202,7 @@ rm -vf %{buildroot}%{confdir}/%{name}-strict.conf
 %ghost %{_sharedstatedir}/%{name}/history
 %{_datadir}/bash-completion/completions/dnf
 %{_mandir}/man5/dnf.conf.5.*
+%{_mandir}/man5/dnf-transaction-json.5.*
 %{_tmpfilesdir}/dnf.conf
 %{_sysconfdir}/libreport/events.d/collect_dnf.conf
 
