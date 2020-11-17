@@ -15,8 +15,8 @@
 
 Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
 Name:		dnf
-Version:	4.4.0
-Release:	3
+Version:	4.4.2
+Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
