@@ -16,7 +16,7 @@
 Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
 Name:		dnf
 Version:	4.5.2
-Release:	1
+Release:	2
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
@@ -165,6 +165,12 @@ EOF
 
 # (tpg) not needed here
 rm -vf %{buildroot}%{confdir}/%{name}-strict.conf
+
+# Set releasever
+if ! grep -q releasever %{buildroot}%{confdir}/%{name}.conf; then
+	. %{_sysconfdir}/os-release
+	echo "releasever=$VERSION_ID" >>%{buildroot}%{confdir}/%{name}.conf
+fi
 
 %check
 #make ARGS="-V" test -C build
