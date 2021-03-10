@@ -30,7 +30,6 @@ Source0:	https://github.com/rpm-software-management/dnf/archive/%{version}/%{nam
 Patch500:	dnf-3.0.2-znver1.patch
 
 # OpenMandriva specific patches
-Patch1001:	dnf-2.7.5-Fix-detection-of-Python-2.patch
 Patch1002:	dnf-2.7.5-Allow-overriding-SYSTEMD_DIR-for-split-usr.patch
 Patch1003:	dnf-4.1.0-sphinx-build.patch
 
@@ -168,8 +167,8 @@ rm -vf %{buildroot}%{confdir}/%{name}-strict.conf
 
 # Set releasever
 if ! grep -q releasever %{buildroot}%{confdir}/%{name}.conf; then
-	. %{_sysconfdir}/os-release
-	echo "releasever=$VERSION_ID" >>%{buildroot}%{confdir}/%{name}.conf
+    . %{_sysconfdir}/os-release
+    echo "releasever=$VERSION_ID" >>%{buildroot}%{confdir}/%{name}.conf
 fi
 
 %check
