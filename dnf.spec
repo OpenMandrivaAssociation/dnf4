@@ -1,8 +1,8 @@
 # Warning: This package is synced from Mageia and Fedora!
 
-%define hawkey_version 0.45.0
+%define hawkey_version 0.59.0
 %define libcomps_version 0.1.8
-%define libmodulemd_version 2.8.3
+%define libmodulemd_version 2.9.3
 %define rpm_version 4.14.2
 %define min_plugins_core 4.0.6
 %define min_plugins_extras 4.0.4
@@ -15,7 +15,7 @@
 
 Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
 Name:		dnf
-Version:	4.6.0
+Version:	4.6.1
 Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
