@@ -13,10 +13,10 @@
 %define py3pluginpath %{python3_sitelib}/dnf-plugins
 
 
-Summary:	Package manager forked from Yum, using libsolv as a dependency resolver
+Summary:	Package manager
 Name:		dnf
 Version:	4.6.1
-Release:	1
+Release:	2
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
@@ -46,10 +46,12 @@ BuildRequires:	python-bugzilla
 BuildRequires:	python-sphinx
 BuildRequires:	systemd-macros
 BuildRequires:	pkgconfig(modulemd-2.0) >= %{libmodulemd_version}
-Requires:	python-dnf = %{version}-%{release}
-Recommends:	dnf-yum
-Recommends:	dnf-plugins-core
+BuildRequires:	pkgconfig(bash-completion)
+Recommends:	(python-dbus if networkmanager)
+Recommends:	(%{_bindir}/sqlite3 if bash-completion)
+Requires:	python-dnf = %{EVRD}
 Conflicts:	dnf-plugins-core < %{min_plugins_core}
+Provides:	dnf-command(alias)
 Provides:	dnf-command(autoremove)
 Provides:	dnf-command(check-update)
 Provides:	dnf-command(clean)
@@ -74,20 +76,24 @@ Provides:	dnf-command(upgrade)
 Provides:	dnf-command(upgrade-to)
 
 %description
-Package manager forked from Yum, using libsolv as a dependency resolver.
+Utility that allows users to manage packages on their systems.
+It supports RPMs, modules and comps groups & environments.
 
-%package conf
-Summary:	Configuration files for DNF
+%package data
+Summary:	Common data and configuration files for DNF
 Group:		System/Configuration/Packaging
+Requires:	libreport-filesystem
+Obsoletes:	%{name}-conf <= %{EVRD}
+Provides:	%{name}-conf = %{EVRD}
 
-%description conf
-Configuration files for DNF.
+%description data
+Common data and configuration files for DNF.
 
 %package yum
 Summary:	As a Yum CLI compatibility layer, supplies /usr/bin/yum redirecting to DNF
 Group:		System/Configuration/Packaging
 Conflicts:	yum
-Requires:	dnf = %{version}-%{release}
+Requires:	dnf = %{EVRD}
 
 %description yum
 As a Yum CLI compatibility layer, supplies /usr/bin/yum redirecting to DNF.
@@ -98,19 +104,18 @@ Group:		System/Configuration/Packaging
 BuildRequires:	pkgconfig(python3)
 BuildRequires:	python-hawkey >= %{hawkey_version}
 BuildRequires:	python-libcomps >= %{libcomps_version}
+BuildRequires:	python-libdnf
 BuildRequires:	python-nose
 BuildRequires:	python-gpg
 BuildRequires:	python-rpm >= %{rpm_version}
-BuildRequires:	pkgconfig(bash-completion)
-Recommends:	bash-completion
-Recommends:	(python-dbus if networkmanager)
-Recommends:	rpm-plugin-systemd-inhibit
-Requires:	dnf-conf = %{version}-%{release}
-Requires:	deltarpm
+Requires:	dnf-data = %{EVRD}
 Requires:	python-hawkey >= %{hawkey_version}
 Requires:	python-libcomps >= %{libcomps_version}
+Requires:	python-libdnf
 Requires:	python-gpg
 Requires:	python-rpm >= %{rpm_version}
+Recommends:	rpm-plugin-systemd-inhibit
+Recommends:	deltarpm
 # DNF 2.0 doesn't work with old plugins
 Conflicts:	python-dnf-plugins-core < %{min_plugins_core}
 Conflicts:	python-dnf-plugins-extras-common < %{min_plugins_extras}
@@ -121,8 +126,8 @@ Python 3 interface to DNF.
 %package automatic
 Summary:	Alternative CLI to "dnf upgrade" suitable for automatic, regular execution
 Group:		System/Configuration/Packaging
-Requires:	dnf = %{version}-%{release}
-Requires:	systemd
+Requires:	dnf = %{EVRD}
+%{?systemd_requires}
 
 %description automatic
 Alternative CLI to "dnf upgrade" suitable for automatic, regular execution.
@@ -142,8 +147,12 @@ make doc-man
 
 %find_lang %{name}
 
+mkdir -p %{buildroot}%{confdir}/vars
+mkdir -p %{buildroot}%{confdir}/aliases.d
 mkdir -p %{buildroot}%{pluginconfpath}
-mkdir -p %{buildroot}%{py3pluginpath}
+mkdir -p %{buildroot}%{_sysconfdir}/%{name}/modules.d
+mkdir -p %{buildroot}%{_sysconfdir}/%{name}/modules.defaults.d
+mkdir -p %{buildroot}%{py3pluginpath}/__pycache__/
 mkdir -p %{buildroot}%{_localstatedir}/log
 mkdir -p %{buildroot}%{_var}/cache/dnf
 touch %{buildroot}%{_localstatedir}/log/%{name}.log
@@ -174,27 +183,51 @@ fi
 %check
 #make ARGS="-V" test -C build
 
+%post
+%systemd_post dnf-makecache.timer
+
+%preun
+%systemd_preun dnf-makecache.timer
+
+%postun
+%systemd_postun_with_restart dnf-makecache.timer
+
+%post automatic
+%systemd_post dnf-automatic.timer dnf-automatic-notifyonly.timer dnf-automatic-download.timer dnf-automatic-install.timer
+
+%preun automatic
+%systemd_preun dnf-automatic.timer dnf-automatic-notifyonly.timer dnf-automatic-download.timer dnf-automatic-install.timer
+
+%postun automatic
+%systemd_postun_with_restart dnf-automatic.timer dnf-automatic-notifyonly.timer dnf-automatic-download.timer dnf-automatic-install.timer
+
+
 %files -f %{name}.lang
-%license COPYING PACKAGE-LICENSING
-%doc AUTHORS README.rst
 %{_bindir}/dnf
-%{_mandir}/man7/dnf.modularity.7*
+%dir %{_datadir}/bash-completion
+%dir %{_datadir}/bash-completion/completions
+%{_datadir}/bash-completion/completions/%{name}
 %{_mandir}/man8/dnf.8*
+%{_mandir}/man8/yum2dnf.8*
+%{_mandir}/man7/dnf.modularity.7*
+%{_mandir}/man5/dnf-transaction-json.5.*
 %{_unitdir}/dnf-makecache.service
 %{_unitdir}/dnf-makecache.timer
 %{_var}/cache/dnf
 
-%files conf
+%files data
 %license COPYING PACKAGE-LICENSING
 %doc AUTHORS README.rst
 %dir %{confdir}
+%dir %{confdir}/modules.d
+%dir %{confdir}/modules.defaults.d
 %dir %{pluginconfpath}
-%dir %{confdir}/aliases.d
 %dir %{confdir}/protected.d
+%dir %{confdir}/vars
+%dir %{confdir}/aliases.d
 %config(noreplace) %{confdir}/%{name}.conf
 %config(noreplace) %{confdir}/aliases.d/zypper.conf
 %config(noreplace) %{confdir}/protected.d/%{name}.conf
-%config(noreplace) %{confdir}/protected.d/yum.conf
 %config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
 %ghost %{_localstatedir}/log/hawkey.log
 %ghost %{_localstatedir}/log/%{name}.log
@@ -205,33 +238,26 @@ fi
 %ghost %{_sharedstatedir}/%{name}/groups.json
 %ghost %{_sharedstatedir}/%{name}/yumdb
 %ghost %{_sharedstatedir}/%{name}/history
-%{_datadir}/bash-completion/completions/dnf
 %{_mandir}/man5/dnf.conf.5.*
-%{_mandir}/man5/dnf-transaction-json.5.*
 %{_tmpfilesdir}/dnf.conf
 %{_sysconfdir}/libreport/events.d/collect_dnf.conf
 
 %files yum
-%license COPYING PACKAGE-LICENSING
-%doc AUTHORS README.rst
+%config(noreplace) %{confdir}/protected.d/yum.conf
 %{_bindir}/yum
 %{_mandir}/man1/yum-aliases.1*
 %{_mandir}/man5/yum.conf.5*
 %{_mandir}/man8/yum.8.*
-%{_mandir}/man8/yum2dnf.8*
 %{_mandir}/man8/yum-shell.8*
 
 %files -n python-dnf
-%license COPYING PACKAGE-LICENSING
-%doc AUTHORS README.rst
 %{_bindir}/dnf-3
 %exclude %{python3_sitelib}/dnf/automatic
 %{python3_sitelib}/dnf/
 %dir %{py3pluginpath}
+%dir %{py3pluginpath}/__pycache__
 
 %files automatic
-%license COPYING PACKAGE-LICENSING
-%doc AUTHORS
 %{_bindir}/%{name}-automatic
 %config(noreplace) %{confdir}/automatic.conf
 %{_presetdir}/86-%{name}-automatic.preset
