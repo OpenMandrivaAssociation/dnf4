@@ -1,10 +1,10 @@
 # Warning: This package is synced from Mageia and Fedora!
 
-%define hawkey_version 0.59.0
+%define hawkey_version 0.61.1
 %define libcomps_version 0.1.8
 %define libmodulemd_version 2.9.3
 %define rpm_version 4.14.2
-%define min_plugins_core 4.0.6
+%define min_plugins_core 4.0.20
 %define min_plugins_extras 4.0.4
 
 %define confdir %{_sysconfdir}/dnf
@@ -15,8 +15,8 @@
 
 Summary:	Package manager
 Name:		dnf
-Version:	4.6.1
-Release:	2
+Version:	4.7.0
+Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
@@ -105,7 +105,6 @@ BuildRequires:	pkgconfig(python3)
 BuildRequires:	python-hawkey >= %{hawkey_version}
 BuildRequires:	python-libcomps >= %{libcomps_version}
 BuildRequires:	python-libdnf
-BuildRequires:	python-nose
 BuildRequires:	python-gpg
 BuildRequires:	python-rpm >= %{rpm_version}
 Requires:	dnf-data = %{EVRD}
