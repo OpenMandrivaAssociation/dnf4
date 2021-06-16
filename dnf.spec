@@ -15,7 +15,7 @@
 
 Summary:	Package manager
 Name:		dnf
-Version:	4.7.0
+Version:	4.8.0
 Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
@@ -199,7 +199,6 @@ fi
 
 %postun automatic
 %systemd_postun_with_restart dnf-automatic.timer dnf-automatic-notifyonly.timer dnf-automatic-download.timer dnf-automatic-install.timer
-
 
 %files -f %{name}.lang
 %{_bindir}/dnf
