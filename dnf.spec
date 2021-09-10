@@ -205,10 +205,10 @@ fi
 %dir %{_datadir}/bash-completion
 %dir %{_datadir}/bash-completion/completions
 %{_datadir}/bash-completion/completions/%{name}
-%{_mandir}/man8/dnf.8*
-%{_mandir}/man8/yum2dnf.8*
-%{_mandir}/man7/dnf.modularity.7*
-%{_mandir}/man5/dnf-transaction-json.5.*
+%doc %{_mandir}/man8/dnf.8*
+%doc %{_mandir}/man8/yum2dnf.8*
+%doc %{_mandir}/man7/dnf.modularity.7*
+%doc %{_mandir}/man5/dnf-transaction-json.5.*
 %{_unitdir}/dnf-makecache.service
 %{_unitdir}/dnf-makecache.timer
 %{_var}/cache/dnf
@@ -236,17 +236,17 @@ fi
 %ghost %{_sharedstatedir}/%{name}/groups.json
 %ghost %{_sharedstatedir}/%{name}/yumdb
 %ghost %{_sharedstatedir}/%{name}/history
-%{_mandir}/man5/dnf.conf.5.*
+%doc %{_mandir}/man5/dnf.conf.5.*
 %{_tmpfilesdir}/dnf.conf
 %{_sysconfdir}/libreport/events.d/collect_dnf.conf
 
 %files yum
 %config(noreplace) %{confdir}/protected.d/yum.conf
 %{_bindir}/yum
-%{_mandir}/man1/yum-aliases.1*
-%{_mandir}/man5/yum.conf.5*
-%{_mandir}/man8/yum.8.*
-%{_mandir}/man8/yum-shell.8*
+%doc %{_mandir}/man1/yum-aliases.1*
+%doc %{_mandir}/man5/yum.conf.5*
+%doc %{_mandir}/man8/yum.8.*
+%doc %{_mandir}/man8/yum-shell.8*
 
 %files -n python-dnf
 %{_bindir}/dnf-3
@@ -268,4 +268,4 @@ fi
 %{_unitdir}/%{name}-automatic-install.service
 %{_unitdir}/%{name}-automatic-install.timer
 %{python3_sitelib}/%{name}/automatic
-%{_mandir}/man8/dnf-automatic.8*
+%doc %{_mandir}/man8/dnf-automatic.8*
