@@ -1,6 +1,6 @@
 # Warning: This package is synced from Mageia and Fedora!
 
-%define hawkey_version 0.61.1
+%define hawkey_version 0.64.0
 %define libcomps_version 0.1.8
 %define libmodulemd_version 2.9.3
 %define rpm_version 4.14.2
@@ -15,7 +15,7 @@
 
 Summary:	Package manager
 Name:		dnf
-Version:	4.8.0
+Version:	4.9.0
 Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
