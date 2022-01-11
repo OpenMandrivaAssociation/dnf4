@@ -44,7 +44,7 @@ BuildRequires:	cmake
 BuildRequires:	gettext
 BuildRequires:	python-bugzilla
 BuildRequires:	python-sphinx
-BuildRequires:	systemd-macros
+BuildRequires:	systemd-rpm-macros
 BuildRequires:	pkgconfig(modulemd-2.0) >= %{libmodulemd_version}
 BuildRequires:	pkgconfig(bash-completion)
 Recommends:	(python-dbus if networkmanager)
