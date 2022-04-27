@@ -1,10 +1,10 @@
 # Warning: This package is synced from Mageia and Fedora!
 
-%define hawkey_version 0.64.0
+%define hawkey_version 0.67.0
 %define libcomps_version 0.1.8
 %define libmodulemd_version 2.9.3
 %define rpm_version 4.14.2
-%define min_plugins_core 4.0.20
+%define min_plugins_core 4.0.26
 %define min_plugins_extras 4.0.4
 
 %define confdir %{_sysconfdir}/dnf
@@ -15,8 +15,8 @@
 
 Summary:	Package manager
 Name:		dnf
-Version:	4.10.0
-Release:	4
+Version:	4.12.0
+Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
@@ -48,7 +48,6 @@ BuildRequires:	systemd-rpm-macros
 BuildRequires:	pkgconfig(modulemd-2.0) >= %{libmodulemd_version}
 BuildRequires:	pkgconfig(bash-completion)
 Recommends:	(python-dbus if networkmanager)
-Recommends:	(%{_bindir}/sqlite3 if bash-completion)
 Requires:	python-dnf = %{EVRD}
 Conflicts:	dnf-plugins-core < %{min_plugins_core}
 Provides:	dnf-command(alias)
@@ -113,7 +112,7 @@ Requires:	python-libcomps >= %{libcomps_version}
 Requires:	python-libdnf
 Requires:	python-gpg
 Requires:	python-rpm >= %{rpm_version}
-Recommends:	rpm-plugin-systemd-inhibit
+Recommends:	(rpm-plugin-systemd-inhibit if systemd)
 Recommends:	deltarpm
 # DNF 2.0 doesn't work with old plugins
 Conflicts:	python-dnf-plugins-core < %{min_plugins_core}
