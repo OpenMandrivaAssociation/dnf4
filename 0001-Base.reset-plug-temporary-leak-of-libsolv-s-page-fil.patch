@@ -1,0 +1,317 @@
+From 5ce5ed1ea08ad6e198c1c1642c4d9ea2db6eab86 Mon Sep 17 00:00:00 2001
+From: Laszlo Ersek <lersek@redhat.com>
+Date: Sun, 24 Apr 2022 09:08:28 +0200
+Subject: [PATCH] Base.reset: plug (temporary) leak of libsolv's page file
+ descriptors
+
+Consider the following call paths (mixed Python and C), extending from
+livecd-creator down to libsolv:
+
+  main                                                [livecd-tools/tools/livecd-creator]
+    install()                                         [livecd-tools/imgcreate/creator.py]
+      fill_sack()                                     [dnf/dnf/base.py]
+        _add_repo_to_sack()                           [dnf/dnf/base.py]
+          load_repo()                                 [libdnf/python/hawkey/sack-py.cpp]
+            dnf_sack_load_repo()                      [libdnf/libdnf/dnf-sack.cpp]
+              write_main()                            [libdnf/libdnf/dnf-sack.cpp]
+                repo_add_solv()                       [libsolv/src/repo_solv.c]
+                  repopagestore_read_or_setup_pages() [libsolv/src/repopage.c]
+                    dup()
+              write_ext()                             [libdnf/libdnf/dnf-sack.cpp]
+                repo_add_solv()                       [libsolv/src/repo_solv.c]
+                  repopagestore_read_or_setup_pages() [libsolv/src/repopage.c]
+                    dup()
+
+The dup() calls create the following file descriptors (output from
+"lsof"):
+
+> COMMAND  PID USER FD  TYPE DEVICE SIZE/OFF   NODE NAME
+> python3 6500 root  7r  REG    8,1 25320727 395438 /var/tmp/imgcreate-mytcghah/install_root/var/cache/dnf/fedora.solv (deleted)
+> python3 6500 root  8r  REG    8,1 52531426 395450 /var/tmp/imgcreate-mytcghah/install_root/var/cache/dnf/fedora-filenames.solvx
+
+These file descriptors are *owned* by the DnfSack object (which is derived
+from GObject), as follows:
+
+  sack->priv->pool->repos[1]->repodata[1]->store.pagefd = 7
+  sack->priv->pool->repos[1]->repodata[2]->store.pagefd = 8
+  ^     ^     ^     ^         ^            ^      ^
+  |     |     |     |         |            |      |
+  |     |     |     |         |            |      int
+  |     |     |     |         |            Repopagestore [libsolv/src/repopage.h]
+  |     |     |     |         Repodata                   [libsolv/src/repodata.h]
+  |     |     |     struct s_Repo                        [libsolv/src/repo.h]
+  |     |     struct s_Pool (aka Pool)                   [libsolv/src/pool.h]
+  |     DnfSackPrivate                                   [libdnf/libdnf/dnf-sack.cpp]
+  DnfSack                                                [libdnf/libdnf/dnf-sack.h]
+
+The file descriptors are *supposed* to be closed on the following call
+path:
+
+  main                                         [livecd-tools/tools/livecd-creator]
+    install()                                  [livecd-tools/imgcreate/creator.py]
+      close()                                  [livecd-tools/imgcreate/dnfinst.py]
+        close()                                [dnf/dnf/base.py]
+          reset()                              [dnf/dnf/base.py]
+            _sack = None
+            _goal = None
+            _transaction = None
+              ...
+                dnf_sack_finalize()            [libdnf/libdnf/dnf-sack.cpp]
+                  pool_free()                  [libsolv/src/pool.c]
+                    pool_freeallrepos()        [libsolv/src/pool.c]
+                      repo_freedata()          [libsolv/src/repo.c]
+                        repodata_freedata()    [libsolv/src/repodata.c]
+                          repopagestore_free() [libsolv/src/repopage.c]
+                            close()
+
+Namely, when dnf.Base.reset() [dnf/dnf/base.py] is called with (sack=True,
+goal=True), the reference counts of the objects pointed to by the "_sack",
+"_goal" and "_transaction" fields are supposed to reach zero, and then, as
+part of the DnfSack object's finalization, the libsolv file descriptors
+are supposed to be closed.
+
+Now, while this *may* happen immediately in dnf.Base.reset(), it may as
+well not. The reason is that there is a multitude of *circular references*
+between DnfSack and the packages that it contains. When dnf.Base.reset()
+is entered, we have the following picture:
+
+     _sack                   _goal
+        |                      |
+        v                      v
+   +----------------+      +-------------+
+   | DnfSack object | <--- | Goal object |
+   +----------------+      +-------------+
+     |^    |^    |^
+     ||    ||    ||
+     ||    ||    ||
+  +--||----||----||---+
+  |  v|    v|    v|   | <-- _transaction
+  | Pkg1  Pkg2  PkgN  |
+  |                   |
+  | Transaction oject |
+  +-------------------+
+
+That is, the reference count of the DnfSack object is (1 + 1 + N), where N
+is the number of packages in the transaction. Details:
+
+(a) The first reference comes from the "_sack" field, established like
+    this:
+
+      main                       [livecd-tools/tools/livecd-creator]
+        install()                [livecd-tools/imgcreate/creator.py]
+          fill_sack()            [dnf/dnf/base.py]
+            _build_sack()        [dnf/dnf/sack.py]
+              Sack()
+                sack_init()      [libdnf/python/hawkey/sack-py.cpp]
+                  dnf_sack_new() [libdnf/libdnf/dnf-sack.cpp]
+
+(b) The second reference on the DnfSack object comes from "_goal":
+
+      main                        [livecd-tools/tools/livecd-creator]
+        install()                 [livecd-tools/imgcreate/creator.py]
+          fill_sack()             [dnf/dnf/base.py]
+             _goal = Goal(_sack)
+               goal_init()        [libdnf/python/hawkey/goal-py.cpp]
+                 Py_INCREF(_sack)
+
+(c) Then there is one reference to "_sack" *per package* in the
+    transaction:
+
+      main                                  [livecd-tools/tools/livecd-creator]
+        install()                           [livecd-tools/imgcreate/creator.py]
+          runInstall()                      [livecd-tools/imgcreate/dnfinst.py]
+            resolve()                       [dnf/dnf/base.py]
+              _goal2transaction()           [dnf/dnf/base.py]
+                list_installs()             [libdnf/python/hawkey/goal-py.cpp]
+                  list_generic()            [libdnf/python/hawkey/goal-py.cpp]
+                    packagelist_to_pylist() [libdnf/python/hawkey/iutil-py.cpp]
+                      new_package()         [libdnf/python/hawkey/sack-py.cpp]
+                        Py_BuildValue()
+                ts.add_install()
+
+    list_installs() creates a list of packages that need to be installed
+    by DNF. Inside the loop in packagelist_to_pylist(), which constructs
+    the elements of that list, Py_BuildValue() is called with the "O"
+    format specifier, and that increases the reference count on "_sack".
+
+    Subsequently, in the _goal2transaction() method, we iterate over the
+    package list created by list_installs(), and add each package to the
+    transaction (ts.add_install()). After _goal2transaction() returns,
+    this transaction is assigned to "self._transaction" in resolve(). This
+    is where the last N (back-)references on the DnfSack object come from.
+
+(d) Now, to quote the defintion of the DnfSack object
+    ("libdnf/docs/hawkey/tutorial-py.rst"):
+
+> *Sack* is an abstraction for a collection of packages.
+
+    That's why the DnfSack object references all the Pkg1 through PkgN
+    packages.
+
+So, when the dnf.Base.reset() method completes, the picture changes like
+this:
+
+     _sack                     _goal
+        |                        |
+   -- [CUT] --              -- [CUT] --
+        |                        |
+        v                |       v
+   +----------------+   [C]  +-------------+
+   | DnfSack object | <-[U]- | Goal object |
+   +----------------+   [T]  +-------------+
+     |^    |^    |^      |
+     ||    ||    ||
+     ||    ||    ||         |
+  +--||----||----||---+    [C]
+  |  v|    v|    v|   | <--[U]-- _transaction
+  | Pkg1  Pkg2  PkgN  |    [T]
+  |                   |     |
+  | Transaction oject |
+  +-------------------+
+
+and we are left with N reference cycles (one between each package and the
+same DnfSack object).
+
+This set of cycles can only be cleaned up by Python's generational garbage
+collector <https://stackify.com/python-garbage-collection/>. The GC will
+collect the DnfSack object, and consequently close the libsolv page file
+descriptors via dnf_sack_finalize() -- but garbage collection will happen
+*only eventually*, unpredictably.
+
+This means that the dnf.Base.reset() method breaks its interface contract:
+
+> Make the Base object forget about various things.
+
+because the libsolv file descriptors can (and frequently do, in practice)
+survive dnf.Base.reset().
+
+In general, as long as the garbage collector only tracks process-private
+memory blocks, there's nothing wrong; however, file descriptors are
+visible to the kernel. When dnf.Base.reset() *temporarily* leaks file
+descriptors as explained above, then immediately subsequent operations
+that depend on those file descriptors having been closed, can fail.
+
+An example is livecd-creator's unmounting of:
+
+  /var/tmp/imgcreate-mytcghah/install_root/var/cache/dnf
+
+which the kernel refuses, due to libsolv's still open file descriptors
+pointing into that filesystem:
+
+> umount: /var/tmp/imgcreate-mytcghah/install_root/var/cache/dnf: target
+> is busy.
+> Unable to unmount /var/tmp/imgcreate-mytcghah/install_root/var/cache/dnf
+> normally, using lazy unmount
+
+(Unfortunately, the whole lazy umount idea is misguided in livecd-tools;
+it's a misfeature that should be removed, as it permits the corruption of
+the loop-backed filesystem. Now that the real bug is being fixed in DNF,
+lazy umount is not needed as a (broken) workaround in livecd-tools. But
+that's a separate patch for livecd-tools:
+<https://github.com/livecd-tools/livecd-tools/pull/227>.)
+
+Plug the fd leak by forcing a garbage collection in dnf.Base.reset()
+whenever we cut the "_sack", "_goal" and "_transaction" links -- that is,
+when the "sack" and "goal" parameters are True.
+
+Note that precisely due to the unpredictable behavior of the garbage
+collector, reproducing the bug may prove elusive. In order to reproduce it
+deterministically, through usage with livecd-creator, disabling automatic
+garbage collection with the following patch (for livecd-tools) is
+sufficient:
+
+> diff --git a/tools/livecd-creator b/tools/livecd-creator
+> index 291de10cbbf9..8d2c740c238b 100755
+> --- a/tools/livecd-creator
+> +++ b/tools/livecd-creator
+> @@ -31,6 +31,8 @@ from dnf.exceptions import Error as DnfBaseError
+>  import imgcreate
+>  from imgcreate.errors import KickstartError
+>
+> +import gc
+> +
+>  class Usage(Exception):
+>      def __init__(self, msg = None, no_error = False):
+>          Exception.__init__(self, msg, no_error)
+> @@ -261,5 +263,6 @@ def do_nss_libs_hack():
+>      return hack
+>
+>  if __name__ == "__main__":
+> +    gc.disable()
+>      hack = do_nss_libs_hack()
+>      sys.exit(main())
+
+Also note that you need to use livecd-tools at git commit 4afde9352e82 or
+later, for this fix to make any difference: said commit fixes a different
+(independent) bug in livecd-tools that produces identical symptoms, but
+from a different origin. In other words, if you don't have commit
+4afde9352e82 in your livecd-tools install, then said bug in livecd-tools
+will mask this DNF fix.
+
+Signed-off-by: Laszlo Ersek <lersek@redhat.com>
+---
+ dnf/base.py | 41 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
+
+diff --git a/dnf/base.py b/dnf/base.py
+index caace028..520574b4 100644
+--- a/dnf/base.py
++++ b/dnf/base.py
+@@ -72,6 +72,7 @@ import dnf.transaction
+ import dnf.util
+ import dnf.yum.rpmtrans
+ import functools
++import gc
+ import hawkey
+ import itertools
+ import logging
+@@ -569,6 +570,46 @@ class Base(object):
+             self._comps_trans = dnf.comps.TransactionBunch()
+             self._transaction = None
+         self._update_security_filters = []
++        if sack and goal:
++            # We've just done this, above:
++            #
++            #      _sack                     _goal
++            #         |                        |
++            #    -- [CUT] --              -- [CUT] --
++            #         |                        |
++            #         v                |       v
++            #    +----------------+   [C]  +-------------+
++            #    | DnfSack object | <-[U]- | Goal object |
++            #    +----------------+   [T]  +-------------+
++            #      |^    |^    |^      |
++            #      ||    ||    ||
++            #      ||    ||    ||         |
++            #   +--||----||----||---+    [C]
++            #   |  v|    v|    v|   | <--[U]-- _transaction
++            #   | Pkg1  Pkg2  PkgN  |    [T]
++            #   |                   |     |
++            #   | Transaction oject |
++            #   +-------------------+
++            #
++            # At this point, the DnfSack object would be released only
++            # eventually, by Python's generational garbage collector, due to the
++            # cyclic references DnfSack<->Pkg1 ... DnfSack<->PkgN.
++            #
++            # The delayed release is a problem: the DnfSack object may
++            # (indirectly) own "page file" file descriptors in libsolv, via
++            # libdnf. For example,
++            #
++            #   sack->priv->pool->repos[1]->repodata[1]->store.pagefd = 7
++            #   sack->priv->pool->repos[1]->repodata[2]->store.pagefd = 8
++            #
++            # These file descriptors are closed when the DnfSack object is
++            # eventually released, that is, when dnf_sack_finalize() (in libdnf)
++            # calls pool_free() (in libsolv).
++            #
++            # We need that to happen right now, as callers may want to unmount
++            # the filesystems which those file descriptors refer to immediately
++            # after reset() returns. Therefore, force a garbage collection here.
++            gc.collect()
+ 
+     def _closeRpmDB(self):
+         """Closes down the instances of rpmdb that could be open."""
+-- 
+2.35.1
+

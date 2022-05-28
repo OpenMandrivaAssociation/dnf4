@@ -1,0 +1,36 @@
+From 8f304e6baa3ea54bb72d8e7e0f5e4143d16678df Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Miro=20Hron=C4=8Dok?= <miro@hroncok.cz>
+Date: Thu, 12 May 2022 16:19:00 +0200
+Subject: [PATCH] Don't use undocumented re.template()
+
+Python 3.11.0b1 removed it: https://github.com/python/cpython/commit/b09184bf05
+
+It might be resurrected for a proper deprecation period, but it is going away.
+
+See https://github.com/python/cpython/issues/92728
+
+I've looked at the original commit that introduced this code: 6707f479bb
+There is no clear indication that would suggest why re.template was used.
+---
+ dnf/cli/term.py | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/dnf/cli/term.py b/dnf/cli/term.py
+index aa075cfe..7361567a 100644
+--- a/dnf/cli/term.py
++++ b/dnf/cli/term.py
+@@ -287,9 +287,8 @@ class Term(object):
+         render = lambda match: beg + match.group() + end
+         for needle in needles:
+             pat = escape(needle)
+-            if ignore_case:
+-                pat = re.template(pat, re.I)
+-            haystack = re.sub(pat, render, haystack)
++            flags = re.I if ignore_case else 0
++            haystack = re.sub(pat, render, haystack, flags=flags)
+         return haystack
+     def sub_norm(self, haystack, beg, needles, **kwds):
+         """Search the string *haystack* for all occurrences of any
+-- 
+2.35.3
+
