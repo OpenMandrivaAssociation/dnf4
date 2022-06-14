@@ -8,15 +8,14 @@
 %define min_plugins_extras 4.0.4
 
 %define confdir %{_sysconfdir}/dnf
-
 %define pluginconfpath %{confdir}/plugins
 %define py3pluginpath %{python3_sitelib}/dnf-plugins
 
 
 Summary:	Package manager
 Name:		dnf
-Version:	4.12.0
-Release:	2
+Version:	4.13.0
+Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
@@ -38,9 +37,6 @@ Patch1003:	dnf-4.1.0-sphinx-build.patch
 # live environment module. Since we currently use a custom one in Mageia,
 # we need to detect it and properly disable the timer. (ngompa)
 Patch1100:	1001-Disable-the-dnf-makecache-timer-for-Mageia-live-envi.patch
-
-Patch1200:	0001-Base.reset-plug-temporary-leak-of-libsolv-s-page-fil.patch
-Patch1201:	0002-Don-t-use-undocumented-re.template.patch
 
 BuildArch:	noarch
 BuildRequires:	cmake
