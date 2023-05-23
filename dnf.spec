@@ -14,7 +14,7 @@
 
 Summary:	Package manager
 Name:		dnf
-Version:	4.15.0
+Version:	4.15.1
 Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
@@ -223,7 +223,12 @@ fi
 %dir %{confdir}/aliases.d
 %config(noreplace) %{confdir}/%{name}.conf
 %config(noreplace) %{confdir}/aliases.d/zypper.conf
-%config(noreplace) %{confdir}/protected.d/%{name}.conf
+# No longer using `noreplace` here. Older versions of DNF 4 marked `dnf` as a
+# protected package, but since Fedora 39, DNF needs to be able to update itself
+# to DNF 5, so we need to replace the old /etc/dnf/protected.d/dnf.conf.
+%config %{confdir}/protected.d/%{name}.conf
+# Protect python3-dnf instead, which does not conflict with DNF 5
+%config(noreplace) %{confdir}/protected.d/python3-%{name}.conf
 %config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
 %ghost %{_localstatedir}/log/hawkey.log
 %ghost %{_localstatedir}/log/%{name}.log
@@ -239,7 +244,10 @@ fi
 %{_sysconfdir}/libreport/events.d/collect_dnf.conf
 
 %files yum
-%config(noreplace) %{confdir}/protected.d/yum.conf
+# No longer using `noreplace` here. Older versions of DNF 4 marked `yum` as a
+# protected package, but since Fedora 39, DNF needs to be able to update itself
+# to DNF 5, so we need to replace the old /etc/dnf/protected.d/yum.conf.
+%config %{confdir}/protected.d/yum.conf
 %{_bindir}/yum
 %doc %{_mandir}/man1/yum-aliases.1*
 %doc %{_mandir}/man5/yum.conf.5*
