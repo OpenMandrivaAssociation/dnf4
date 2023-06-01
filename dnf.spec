@@ -11,10 +11,12 @@
 %define pluginconfpath %{confdir}/plugins
 %define py3pluginpath %{python3_sitelib}/dnf-plugins
 
+# (tpg) dnf5 is not yet ready to replace dnf
+%bcond_with dnf5_default
 
 Summary:	Package manager
 Name:		dnf
-Version:	4.15.1
+Version:	4.16.1
 Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
@@ -44,11 +46,59 @@ BuildRequires:	gettext
 BuildRequires:	python-bugzilla
 BuildRequires:	python-sphinx
 BuildRequires:	systemd-rpm-macros
-BuildRequires:	pkgconfig(modulemd-2.0) >= %{libmodulemd_version}
+
 BuildRequires:	pkgconfig(bash-completion)
 Recommends:	(python-dbus if networkmanager)
-Requires:	python-dnf = %{EVRD}
-Conflicts:	dnf-plugins-core < %{min_plugins_core}
+Conflicts:	python-dnf-plugins-core < %{min_plugins_core}
+Conflicts:	python-dnf-plugins-extras-common < %{min_plugins_extras}
+
+%description
+Utility that allows users to manage packages on their systems.
+It supports RPMs, modules and comps groups & environments.
+
+%package data
+Summary:	Common data and configuration files for DNF
+Group:		System/Configuration/Packaging
+Requires:	libreport-filesystem
+Obsoletes:	%{name}-conf <= %{EVRD}
+Provides:	%{name}-conf = %{EVRD}
+%if %{with dnf5_default}
+Requires:	%{_lib}dnf1 >= 5
+%endif
+
+%description data
+Common data and configuration files for DNF.
+
+%package yum
+Summary:	As a Yum CLI compatibility layer, supplies /usr/bin/yum redirecting to DNF
+Group:		System/Configuration/Packaging
+Conflicts:	yum
+Requires:	dnf = %{EVRD}
+
+%description yum
+As a Yum CLI compatibility layer, supplies /usr/bin/yum redirecting to DNF.
+
+%package -n python-dnf
+Summary:	Python 3 interface to DNF
+Group:		System/Configuration/Packaging
+BuildRequires:	pkgconfig(python3)
+BuildRequires:	python-hawkey >= %{hawkey_version}
+BuildRequires:	python-libdnf >= %{hawkey_version}
+BuildRequires:	python-libcomps >= %{libcomps_version}
+BuildRequires:	python-libdnf
+BuildRequires:	pkgconfig(modulemd-2.0) >= %{libmodulemd_version}
+Requires:	%{_lib}modulemd2 >= %{libmodulemd_version}
+BuildRequires:	python-gpg
+Requires:	python-gpg
+Requires:	dnf-data = %{EVRD}
+Recommends:	deltarpm
+Requires:	python-hawkey >= %{hawkey_version}
+Requires:	python-libdnf >= %{hawkey_version}
+Requires:	python-libcomps >= %{libcomps_version}
+Requires:	python-libdnf
+BuildRequires:	python-rpm >= %{rpm_version}
+Requires:	python-rpm >= %{rpm_version}
+Recommends:	(rpm-plugin-systemd-inhibit if systemd)
 Provides:	dnf-command(alias)
 Provides:	dnf-command(autoremove)
 Provides:	dnf-command(check-update)
@@ -73,57 +123,13 @@ Provides:	dnf-command(updateinfo)
 Provides:	dnf-command(upgrade)
 Provides:	dnf-command(upgrade-to)
 
-%description
-Utility that allows users to manage packages on their systems.
-It supports RPMs, modules and comps groups & environments.
-
-%package data
-Summary:	Common data and configuration files for DNF
-Group:		System/Configuration/Packaging
-Requires:	libreport-filesystem
-Obsoletes:	%{name}-conf <= %{EVRD}
-Provides:	%{name}-conf = %{EVRD}
-
-%description data
-Common data and configuration files for DNF.
-
-%package yum
-Summary:	As a Yum CLI compatibility layer, supplies /usr/bin/yum redirecting to DNF
-Group:		System/Configuration/Packaging
-Conflicts:	yum
-Requires:	dnf = %{EVRD}
-
-%description yum
-As a Yum CLI compatibility layer, supplies /usr/bin/yum redirecting to DNF.
-
-%package -n python-dnf
-Summary:	Python 3 interface to DNF
-Group:		System/Configuration/Packaging
-BuildRequires:	pkgconfig(python3)
-BuildRequires:	python-hawkey >= %{hawkey_version}
-BuildRequires:	python-libcomps >= %{libcomps_version}
-BuildRequires:	python-libdnf
-BuildRequires:	python-gpg
-BuildRequires:	python-rpm >= %{rpm_version}
-Requires:	dnf-data = %{EVRD}
-Requires:	python-hawkey >= %{hawkey_version}
-Requires:	python-libcomps >= %{libcomps_version}
-Requires:	python-libdnf
-Requires:	python-gpg
-Requires:	python-rpm >= %{rpm_version}
-Recommends:	(rpm-plugin-systemd-inhibit if systemd)
-Recommends:	deltarpm
-# DNF 2.0 doesn't work with old plugins
-Conflicts:	python-dnf-plugins-core < %{min_plugins_core}
-Conflicts:	python-dnf-plugins-extras-common < %{min_plugins_extras}
-
 %description -n python-dnf
 Python 3 interface to DNF.
 
 %package automatic
 Summary:	Alternative CLI to "dnf upgrade" suitable for automatic, regular execution
 Group:		System/Configuration/Packaging
-Requires:	dnf = %{EVRD}
+Requires:	python-dnf = %{EVRD}
 %{?systemd_requires}
 
 %description automatic
@@ -155,7 +161,9 @@ mkdir -p %{buildroot}%{_var}/cache/dnf
 touch %{buildroot}%{_localstatedir}/log/%{name}.log
 ln -sr %{buildroot}%{_bindir}/dnf-3 %{buildroot}%{_bindir}/dnf
 mv %{buildroot}%{_bindir}/dnf-automatic-3 %{buildroot}%{_bindir}/dnf-automatic
+rm -vf %{buildroot}%{_bindir}/dnf-automatic-*
 ln -sr %{buildroot}%{_bindir}/dnf %{buildroot}%{_bindir}/yum
+rm -vf %{buildroot}%{confdir}/%{name}-strict.conf
 
 # Ensure code is byte compiled
 %py_compile %{buildroot}
@@ -168,14 +176,15 @@ enable %{name}-automatic-download.timer
 disable %{name}-automatic-install.timer
 EOF
 
-# (tpg) not needed here
-rm -vf %{buildroot}%{confdir}/%{name}-strict.conf
-
+%if %{with dnf5_default}
+rm %{buildroot}%{confdir}/%{name}.conf
+%else
 # Set releasever
 if ! grep -q releasever %{buildroot}%{confdir}/%{name}.conf; then
     . %{_sysconfdir}/os-release
     echo "releasever=$VERSION_ID" >>%{buildroot}%{confdir}/%{name}.conf
 fi
+%endif
 
 %check
 #make ARGS="-V" test -C build
@@ -218,11 +227,15 @@ fi
 %dir %{confdir}/modules.d
 %dir %{confdir}/modules.defaults.d
 %dir %{pluginconfpath}
+%if %{without dnf5_default}
 %dir %{confdir}/protected.d
 %dir %{confdir}/vars
+%endif
 %dir %{confdir}/aliases.d
-%config(noreplace) %{confdir}/%{name}.conf
 %config(noreplace) %{confdir}/aliases.d/zypper.conf
+%if %{without dnf5_default}
+%config(noreplace) %{confdir}/%{name}.conf
+%endif
 # No longer using `noreplace` here. Older versions of DNF 4 marked `dnf` as a
 # protected package, but since Fedora 39, DNF needs to be able to update itself
 # to DNF 5, so we need to replace the old /etc/dnf/protected.d/dnf.conf.
