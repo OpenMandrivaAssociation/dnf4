@@ -17,7 +17,7 @@
 Summary:	Package manager
 Name:		dnf
 Version:	4.16.1
-Release:	1
+Release:	2
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
@@ -48,6 +48,7 @@ BuildRequires:	python-sphinx
 BuildRequires:	systemd-rpm-macros
 
 BuildRequires:	pkgconfig(bash-completion)
+Requires:	python-%{name} = %{EVRD}
 Recommends:	(python-dbus if networkmanager)
 Conflicts:	python-dnf-plugins-core < %{min_plugins_core}
 Conflicts:	python-dnf-plugins-extras-common < %{min_plugins_extras}
@@ -78,7 +79,7 @@ Requires:	dnf = %{EVRD}
 %description yum
 As a Yum CLI compatibility layer, supplies /usr/bin/yum redirecting to DNF.
 
-%package -n python-dnf
+%package -n python-%{name}
 Summary:	Python 3 interface to DNF
 Group:		System/Configuration/Packaging
 BuildRequires:	pkgconfig(python3)
@@ -123,7 +124,7 @@ Provides:	dnf-command(updateinfo)
 Provides:	dnf-command(upgrade)
 Provides:	dnf-command(upgrade-to)
 
-%description -n python-dnf
+%description -n python-%{name}
 Python 3 interface to DNF.
 
 %package automatic
@@ -139,7 +140,8 @@ Alternative CLI to "dnf upgrade" suitable for automatic, regular execution.
 %autosetup -p1
 
 %build
-%cmake -DPYTHON_DESIRED:FILEPATH="%{__python3}" \
+%cmake \
+	-DPYTHON_DESIRED:FILEPATH="%{__python3}" \
 	-DSYSTEMD_DIR:str="%{_unitdir}"
 
 %make_build
