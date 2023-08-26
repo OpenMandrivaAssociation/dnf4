@@ -1,0 +1,27 @@
+From 33fde245b0a49eb02837b6fedb2d14ed92c2d99f Mon Sep 17 00:00:00 2001
+From: grumpey <61189565+grumpey@users.noreply.github.com>
+Date: Sun, 20 Aug 2023 07:35:29 -0400
+Subject: [PATCH] Fix bash completion due to sqlite changes
+
+= changelog =
+msg:  Fix bash completion due to sqlite changes
+type:  bugfix
+resolves:  https://bugzilla.redhat.com/show_bug.cgi?id=2232052
+related:  https://sqlite.org/src/info/c995932c3ffe7f27
+---
+ etc/bash_completion.d/dnf | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/etc/bash_completion.d/dnf b/etc/bash_completion.d/dnf
+index eb34b807a9..8a9256a695 100644
+--- a/etc/bash_completion.d/dnf
++++ b/etc/bash_completion.d/dnf
+@@ -112,7 +112,7 @@ _dnf_query_db()
+ {
+     local table=$1
+     local prefix=$2
+-    local query="select pkg from $table where pkg like \"$prefix%\""
++    local query="select pkg from $table where pkg like '$prefix%'"
+     if [ "$table" = "available" ]; then
+         # The available table contains both installed and non-installed
+         # packages. Exclude the installed packages.

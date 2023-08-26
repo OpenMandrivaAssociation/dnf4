@@ -17,7 +17,7 @@
 Summary:	Package manager
 Name:		dnf
 Version:	4.16.1
-Release:	2
+Release:	3
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
@@ -25,6 +25,7 @@ URL:		https://github.com/rpm-software-management/dnf
 Source0:	https://github.com/rpm-software-management/dnf/archive/%{version}/%{name}-%{version}.tar.gz
 
 # Backports from upstream
+Patch0:		https://github.com/rpm-software-management/dnf/commit/33fde245b0a49eb02837b6fedb2d14ed92c2d99f.patch
 
 # Suitable for upstreaming
 # Teach dnf about znver1 and znver1_32 sub-arches
