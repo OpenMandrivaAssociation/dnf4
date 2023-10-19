@@ -1,6 +1,6 @@
 # Warning: This package is synced from Mageia and Fedora!
 
-%define hawkey_version 0.71.0
+%define hawkey_version 0.71.1
 %define libcomps_version 0.1.8
 %define libmodulemd_version 2.9.3
 %define rpm_version 4.18.0
@@ -12,11 +12,11 @@
 %define py3pluginpath %{python3_sitelib}/dnf-plugins
 
 # (tpg) dnf5 is not yet ready to replace dnf
-%bcond_with dnf5_default
+%bcond_with dnf5_obsoletes_dnf
 
 Summary:	Package manager
 Name:		dnf
-Version:	4.17.0
+Version:	4.18.0
 Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
@@ -25,7 +25,6 @@ URL:		https://github.com/rpm-software-management/dnf
 Source0:	https://github.com/rpm-software-management/dnf/archive/%{version}/%{name}-%{version}.tar.gz
 
 # Backports from upstream
-Patch0:		https://github.com/rpm-software-management/dnf/commit/33fde245b0a49eb02837b6fedb2d14ed92c2d99f.patch
 
 # Suitable for upstreaming
 # Teach dnf about znver1 and znver1_32 sub-arches
@@ -64,7 +63,8 @@ Group:		System/Configuration/Packaging
 Requires:	libreport-filesystem
 Obsoletes:	%{name}-conf <= %{EVRD}
 Provides:	%{name}-conf = %{EVRD}
-%if %{with dnf5_default}
+%if %{with dnf5_obsoletes_dnf}
+Requires:	/etc/dnf/dnf.conf
 Requires:	%{_lib}dnf1 >= 5
 %endif
 
@@ -141,6 +141,7 @@ Alternative CLI to "dnf upgrade" suitable for automatic, regular execution.
 %build
 %cmake \
 	-DPYTHON_DESIRED:FILEPATH="%{__python3}" \
+	-DDNF_VERSION=%{version} \
 	-DSYSTEMD_DIR:str="%{_unitdir}"
 
 %make_build
@@ -153,18 +154,25 @@ make doc-man
 
 mkdir -p %{buildroot}%{confdir}/vars
 mkdir -p %{buildroot}%{confdir}/aliases.d
-mkdir -p %{buildroot}%{pluginconfpath}
+mkdir -p %{buildroot}%{pluginconfpath}/
 mkdir -p %{buildroot}%{_sysconfdir}/%{name}/modules.d
 mkdir -p %{buildroot}%{_sysconfdir}/%{name}/modules.defaults.d
 mkdir -p %{buildroot}%{py3pluginpath}/__pycache__/
-mkdir -p %{buildroot}%{_localstatedir}/log
-mkdir -p %{buildroot}%{_var}/cache/dnf
+mkdir -p %{buildroot}%{_localstatedir}/log/
+mkdir -p %{buildroot}%{_var}/cache/dnf/
 touch %{buildroot}%{_localstatedir}/log/%{name}.log
 ln -sr %{buildroot}%{_bindir}/dnf-3 %{buildroot}%{_bindir}/dnf
+ln -sr %{buildroot}%{_bindir}/dnf-3 %{buildroot}%{_bindir}/dnf4
 mv %{buildroot}%{_bindir}/dnf-automatic-3 %{buildroot}%{_bindir}/dnf-automatic
 rm -vf %{buildroot}%{_bindir}/dnf-automatic-*
-ln -sr %{buildroot}%{_bindir}/dnf %{buildroot}%{_bindir}/yum
 rm -vf %{buildroot}%{confdir}/%{name}-strict.conf
+
+ln -sr  %{buildroot}%{confdir}/%{name}.conf %{buildroot}%{_sysconfdir}/yum.conf
+ln -sr  %{buildroot}%{_bindir}/dnf-3 %{buildroot}%{_bindir}/yum
+mkdir -p %{buildroot}%{_sysconfdir}/yum
+ln -sr  %{buildroot}%{pluginconfpath} %{buildroot}%{_sysconfdir}/yum/pluginconf.d
+ln -sr  %{buildroot}%{confdir}/protected.d %{buildroot}%{_sysconfdir}/yum/protected.d
+ln -sr  %{buildroot}%{confdir}/vars %{buildroot}%{_sysconfdir}/yum/vars
 
 # Ensure code is byte compiled
 %py_compile %{buildroot}
@@ -177,7 +185,7 @@ enable %{name}-automatic-download.timer
 disable %{name}-automatic-install.timer
 EOF
 
-%if %{with dnf5_default}
+%if %{with dnf5_obsoletes_dnf}
 rm %{buildroot}%{confdir}/%{name}.conf
 %else
 # Set releasever
@@ -209,17 +217,17 @@ fi
 %systemd_postun_with_restart dnf-automatic.timer dnf-automatic-notifyonly.timer dnf-automatic-download.timer dnf-automatic-install.timer
 
 %files -f %{name}.lang
-%{_bindir}/dnf
+%{_bindir}/%{name}
 %dir %{_datadir}/bash-completion
 %dir %{_datadir}/bash-completion/completions
 %{_datadir}/bash-completion/completions/%{name}
-%doc %{_mandir}/man8/dnf.8*
+%doc %{_mandir}/man8/%{name}.8*
 %doc %{_mandir}/man8/yum2dnf.8*
 %doc %{_mandir}/man7/dnf.modularity.7*
 %doc %{_mandir}/man5/dnf-transaction-json.5.*
-%{_unitdir}/dnf-makecache.service
-%{_unitdir}/dnf-makecache.timer
-%{_var}/cache/dnf
+%{_unitdir}/%{name}-makecache.service
+%{_unitdir}/%{name}-makecache.timer
+%{_var}/cache/%{name}
 
 %files data
 %license COPYING PACKAGE-LICENSING
@@ -228,50 +236,59 @@ fi
 %dir %{confdir}/modules.d
 %dir %{confdir}/modules.defaults.d
 %dir %{pluginconfpath}
-%if %{without dnf5_default}
+%if %{without dnf5_obsoletes_dnf}
 %dir %{confdir}/protected.d
 %dir %{confdir}/vars
 %endif
 %dir %{confdir}/aliases.d
 %config(noreplace) %{confdir}/aliases.d/zypper.conf
-%if %{without dnf5_default}
+%if %{without dnf5_obsoletes_dnf}
 %config(noreplace) %{confdir}/%{name}.conf
 %endif
-# No longer using `noreplace` here. Older versions of DNF 4 marked `dnf` as a
-# protected package, but since Fedora 39, DNF needs to be able to update itself
-# to DNF 5, so we need to replace the old /etc/dnf/protected.d/dnf.conf.
-%config %{confdir}/protected.d/%{name}.conf
-# Protect python3-dnf instead, which does not conflict with DNF 5
-%config(noreplace) %{confdir}/protected.d/python3-%{name}.conf
 %config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
-%ghost %{_localstatedir}/log/hawkey.log
-%ghost %{_localstatedir}/log/%{name}.log
-%ghost %{_localstatedir}/log/%{name}.librepo.log
-%ghost %{_localstatedir}/log/%{name}.rpm.log
-%ghost %{_localstatedir}/log/%{name}.plugin.log
-%ghost %{_sharedstatedir}/%{name}
-%ghost %{_sharedstatedir}/%{name}/groups.json
-%ghost %{_sharedstatedir}/%{name}/yumdb
-%ghost %{_sharedstatedir}/%{name}/history
-%doc %{_mandir}/man5/dnf.conf.5.*
-%{_tmpfilesdir}/dnf.conf
+%ghost %attr(644,-,-) %{_localstatedir}/log/hawkey.log
+%ghost %attr(644,-,-) %{_localstatedir}/log/%{name}.log
+%ghost %attr(644,-,-) %{_localstatedir}/log/%{name}.librepo.log
+%ghost %attr(644,-,-) %{_localstatedir}/log/%{name}.rpm.log
+%ghost %attr(644,-,-) %{_localstatedir}/log/%{name}.plugin.log
+%ghost %attr(755,-,-) %{_sharedstatedir}/%{name}
+%ghost %attr(644,-,-) %{_sharedstatedir}/%{name}/groups.json
+%ghost %attr(755,-,-) %{_sharedstatedir}/%{name}/yumdb
+%ghost %attr(755,-,-) %{_sharedstatedir}/%{name}/history
+%doc %{_mandir}/man5/%{name}.conf.5.*
+%{_tmpfilesdir}/%{name}.conf
 %{_sysconfdir}/libreport/events.d/collect_dnf.conf
 
 %files yum
 # No longer using `noreplace` here. Older versions of DNF 4 marked `yum` as a
 # protected package, but since Fedora 39, DNF needs to be able to update itself
 # to DNF 5, so we need to replace the old /etc/dnf/protected.d/yum.conf.
+%if %{without dnf5_obsoletes_dnf}
+# If DNF5 does not obsolete DNF, protected.d/yum.conf should be owned by DNF
+%config(noreplace) %{confdir}/protected.d/yum.conf
+%else
+# If DNF5 obsoletes DNF
+# No longer using `noreplace` here. Older versions of DNF 4 marked `yum` as a
+# protected package, but since Fedora 39, DNF needs to be able to update itself
+# to DNF 5, so we need to replace the old /etc/dnf/protected.d/yum.conf.
 %config %{confdir}/protected.d/yum.conf
+%endif
 %{_bindir}/yum
+%{_sysconfdir}/yum.conf
+%{_sysconfdir}/yum/pluginconf.d
+%{_sysconfdir}/yum/protected.d
+%{_sysconfdir}/yum/vars
 %doc %{_mandir}/man1/yum-aliases.1*
 %doc %{_mandir}/man5/yum.conf.5*
 %doc %{_mandir}/man8/yum.8.*
 %doc %{_mandir}/man8/yum-shell.8*
 
 %files -n python-dnf
-%{_bindir}/dnf-3
-%exclude %{python3_sitelib}/dnf/automatic
-%{python3_sitelib}/dnf/
+%{_bindir}/%{name}-3
+%{_bindir}/%{name}4
+%exclude %{python3_sitelib}/%{name}/automatic
+%{python3_sitelib}/%{name}/
+%{python3_sitelib}/%{name}-*.dist-info
 %dir %{py3pluginpath}
 %dir %{py3pluginpath}/__pycache__
 
