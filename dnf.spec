@@ -17,7 +17,7 @@
 Summary:	Package manager
 Name:		dnf
 Version:	4.18.0
-Release:	1
+Release:	2
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
@@ -63,8 +63,8 @@ Group:		System/Configuration/Packaging
 Requires:	libreport-filesystem
 Obsoletes:	%{name}-conf <= %{EVRD}
 Provides:	%{name}-conf = %{EVRD}
+Requires:	%{_sysconfdir}/dnf/dnf.conf
 %if %{with dnf5_obsoletes_dnf}
-Requires:	/etc/dnf/dnf.conf
 Requires:	%{_lib}dnf1 >= 5
 %endif
 
@@ -185,15 +185,8 @@ enable %{name}-automatic-download.timer
 disable %{name}-automatic-install.timer
 EOF
 
-%if %{with dnf5_obsoletes_dnf}
-rm %{buildroot}%{confdir}/%{name}.conf
-%else
-# Set releasever
-if ! grep -q releasever %{buildroot}%{confdir}/%{name}.conf; then
-    . %{_sysconfdir}/os-release
-    echo "releasever=$VERSION_ID" >>%{buildroot}%{confdir}/%{name}.conf
-fi
-%endif
+# We get dnf.conf from distro-release (and it's shared with dnf5)
+rm %{buildroot}%{_sysconfdir}/dnf/dnf.conf
 
 %check
 #make ARGS="-V" test -C build
@@ -242,9 +235,6 @@ fi
 %endif
 %dir %{confdir}/aliases.d
 %config(noreplace) %{confdir}/aliases.d/zypper.conf
-%if %{without dnf5_obsoletes_dnf}
-%config(noreplace) %{confdir}/%{name}.conf
-%endif
 %config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
 %ghost %attr(644,-,-) %{_localstatedir}/log/hawkey.log
 %ghost %attr(644,-,-) %{_localstatedir}/log/%{name}.log
