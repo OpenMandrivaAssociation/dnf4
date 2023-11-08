@@ -16,8 +16,8 @@
 
 Summary:	Package manager
 Name:		dnf
-Version:	4.18.0
-Release:	2
+Version:	4.18.1
+Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
