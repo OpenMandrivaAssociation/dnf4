@@ -17,7 +17,7 @@
 Summary:	Package manager
 Name:		dnf
 Version:	4.18.2
-Release:	1
+Release:	2
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
@@ -60,7 +60,6 @@ It supports RPMs, modules and comps groups & environments.
 %package data
 Summary:	Common data and configuration files for DNF
 Group:		System/Configuration/Packaging
-Requires:	libreport-filesystem
 Obsoletes:	%{name}-conf <= %{EVRD}
 Provides:	%{name}-conf = %{EVRD}
 Requires:	%{_sysconfdir}/dnf/dnf.conf
