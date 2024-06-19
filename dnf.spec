@@ -16,7 +16,7 @@
 
 Summary:	Package manager
 Name:		dnf
-Version:	4.19.0
+Version:	4.21.0
 Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
@@ -88,7 +88,6 @@ BuildRequires:	python-libdnf >= %{hawkey_version}
 BuildRequires:	python-libcomps >= %{libcomps_version}
 BuildRequires:	python-libdnf
 BuildRequires:	pkgconfig(modulemd-2.0) >= %{libmodulemd_version}
-Requires:	%{_lib}modulemd2 >= %{libmodulemd_version}
 Requires:	dnf-data = %{EVRD}
 Recommends:	deltarpm
 Requires:	python-hawkey >= %{hawkey_version}
@@ -212,11 +211,11 @@ rm %{buildroot}%{_sysconfdir}/dnf/dnf.conf
 %{_bindir}/%{name}
 %dir %{_datadir}/bash-completion
 %dir %{_datadir}/bash-completion/completions
-%{_datadir}/bash-completion/completions/%{name}
-%doc %{_mandir}/man8/%{name}.8*
+%{_datadir}/bash-completion/completions/dnf-3
+%doc %{_mandir}/man8/dnf4.8*
 %doc %{_mandir}/man8/yum2dnf.8*
-%doc %{_mandir}/man7/dnf.modularity.7*
-%doc %{_mandir}/man5/dnf-transaction-json.5.*
+%doc %{_mandir}/man7/dnf4.modularity.7*
+%doc %{_mandir}/man5/dnf4-transaction-json.5.*
 %{_unitdir}/%{name}-makecache.service
 %{_unitdir}/%{name}-makecache.timer
 %{_var}/cache/%{name}
@@ -244,9 +243,9 @@ rm %{buildroot}%{_sysconfdir}/dnf/dnf.conf
 %ghost %attr(644,-,-) %{_sharedstatedir}/%{name}/groups.json
 %ghost %attr(755,-,-) %{_sharedstatedir}/%{name}/yumdb
 %ghost %attr(755,-,-) %{_sharedstatedir}/%{name}/history
-%doc %{_mandir}/man5/%{name}.conf.5.*
+%doc %{_mandir}/man5/dnf4.conf.5.*
 %{_tmpfilesdir}/%{name}.conf
-%{_sysconfdir}/libreport/events.d/collect_dnf.conf
+#{_sysconfdir}/libreport/events.d/collect_dnf.conf
 
 %files yum
 # No longer using `noreplace` here. Older versions of DNF 4 marked `yum` as a
