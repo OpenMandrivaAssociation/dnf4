@@ -16,7 +16,7 @@
 
 Summary:	Package manager
 Name:		dnf
-Version:	4.21.1
+Version:	4.22.0
 Release:	1
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
