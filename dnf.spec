@@ -17,7 +17,7 @@
 Summary:	Package manager
 Name:		dnf
 Version:	4.22.0
-Release:	1
+Release:	2
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
@@ -89,7 +89,6 @@ BuildRequires:	python-libcomps >= %{libcomps_version}
 BuildRequires:	python-libdnf
 BuildRequires:	pkgconfig(modulemd-2.0) >= %{libmodulemd_version}
 Requires:	dnf-data = %{EVRD}
-Recommends:	deltarpm
 Requires:	python-hawkey >= %{hawkey_version}
 Requires:	python-libdnf >= %{hawkey_version}
 Requires:	python-libcomps >= %{libcomps_version}
