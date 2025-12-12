@@ -16,7 +16,7 @@
 Summary:	Package manager
 Name:		dnf4
 Version:	4.22.0
-Release:	1
+Release:	2
 Group:		System/Configuration/Packaging
 # For a breakdown of the licensing, see PACKAGE-LICENSING
 License:	GPLv2+ and GPLv2 and GPL
